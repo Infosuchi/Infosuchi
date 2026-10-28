@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Noticias INFOSUCHI</title>
+    <title>NOTICIAS INFOSUCHI</title>
     <!-- Google Fonts & FontAwesome para iconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -432,7 +432,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 Portal de Noticias INFOSUCHI. todos los derechos reservados.</p>
+        <p>&copy; 2026 Portal de Noticias Infosuchi. Todos los derechos reservados.</p>
     </footer>
 
     <!-- Modal Admin -->
@@ -571,7 +571,6 @@
         function abrirPanelAdmin() {
             document.getElementById('adminModal').style.display = 'flex';
             
-            // Verificación estricta de sesión activa en Firebase Auth
             const currentUser = auth.currentUser;
             if (currentUser) {
                 cargarPanelGestion();
@@ -620,7 +619,6 @@
         }
 
         function cargarPanelGestion(noticiaAEditar = null) {
-            // Doble validación de seguridad
             if (!auth.currentUser) {
                 mostrarLogin();
                 return;
@@ -735,48 +733,45 @@
             btnGuardar.innerText = "Guardando...";
             btnGuardar.disabled = true;
 
-            const id = document.getElementById('noticiaId').value;
-            const archivoInput = document.getElementById('archivoInput').files[0];
-            let urlMedia = document.getElementById('urlMediaInput').value;
+            try {
+                const id = document.getElementById('noticiaId').value;
+                const archivoInput = document.getElementById('archivoInput').files[0];
+                let urlMedia = document.getElementById('urlMediaInput').value;
 
-            // Si se seleccionó un archivo para subir, se sube a Firebase Storage
-            if (archivoInput) {
-                try {
+                if (archivoInput) {
                     const storageRef = storage.ref().child('multimedia/' + Date.now() + '_' + archivoInput.name);
                     const snapshot = await storageRef.put(archivoInput);
                     urlMedia = await snapshot.ref.getDownloadURL();
-                } catch (error) {
-                    alert("Error al subir archivo: " + error.message);
-                    btnGuardar.innerText = "Publicar Noticia";
-                    btnGuardar.disabled = false;
-                    return;
+                } else if (!urlMedia) {
+                    urlMedia = document.getElementById('urlMediaExistente').value;
                 }
-            } else if (!urlMedia) {
-                // Si no se subió archivo ni se puso URL, mantiene el que ya tenía (si es edición)
-                urlMedia = document.getElementById('urlMediaExistente').value;
-            }
 
-            const data = {
-                titulo: document.getElementById('tituloInput').value,
-                categoria: document.getElementById('categoriaInput').value,
-                fecha: document.getElementById('fechaInput').value,
-                autor: document.getElementById('autorInput').value || 'Redacción',
-                tipoMedia: document.getElementById('tipoMediaInput').value,
-                urlMedia: urlMedia,
-                cuerpo: document.getElementById('cuerpoInput').value,
-                hashtags: document.getElementById('hashtagsInput').value
-            };
+                const data = {
+                    titulo: document.getElementById('tituloInput').value,
+                    categoria: document.getElementById('categoriaInput').value,
+                    fecha: document.getElementById('fechaInput').value,
+                    autor: document.getElementById('autorInput').value || 'Redacción',
+                    tipoMedia: document.getElementById('tipoMediaInput').value,
+                    urlMedia: urlMedia,
+                    cuerpo: document.getElementById('cuerpoInput').value,
+                    hashtags: document.getElementById('hashtagsInput').value
+                };
 
-            const promesa = id ? db.collection("noticias").doc(id).update(data) : db.collection("noticias").add(data);
+                if (id) {
+                    await db.collection("noticias").doc(id).update(data);
+                } else {
+                    await db.collection("noticias").add(data);
+                }
 
-            promesa.then(() => {
-                alert("¡Guardado correctamente!");
+                alert("¡Noticia guardada con éxito!");
                 cargarPanelGestion();
-            }).catch(err => {
-                alert("Error: " + err.message);
+
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                alert("Error al guardar: " + error.message);
                 btnGuardar.innerText = "Publicar Noticia";
                 btnGuardar.disabled = false;
-            });
+            }
         }
 
         function prepararEdicion(id) {
@@ -794,5 +789,3 @@
     </script>
 </body>
 </html>
-
-
