@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Noticias</title>
+    <title>Portal de Noticias INFOSUCHI</title>
     <!-- Google Fonts & FontAwesome para iconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <style>
         :root {
@@ -431,7 +432,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 Portal de Noticias. Hospedado en GitHub Pages con Firebase.</p>
+        <p>&copy; 2026 Portal de Noticias INFOSUCHI. todos los derechos reservados.</p>
     </footer>
 
     <!-- Modal Admin -->
@@ -459,6 +460,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        const storage = firebase.storage();
 
         let noticias = [];
         let categoriaActual = 'Todas';
@@ -467,7 +469,6 @@
             escucharNoticiasFirestore();
         });
 
-        // Sincronización en tiempo real con Firestore
         function escucharNoticiasFirestore() {
             db.collection("noticias").orderBy("fecha", "desc").onSnapshot((snapshot) => {
                 noticias = [];
@@ -566,16 +567,17 @@
             renderizarNoticias(categoria);
         }
 
-        // --- AUTENTICACIÓN Y GESTIÓN FIREBASE ---
+        // --- AUTENTICACIÓN ESTRICTA Y PANEL ---
         function abrirPanelAdmin() {
             document.getElementById('adminModal').style.display = 'flex';
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    cargarPanelGestion();
-                } else {
-                    mostrarLogin();
-                }
-            });
+            
+            // Verificación estricta de sesión activa en Firebase Auth
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                cargarPanelGestion();
+            } else {
+                mostrarLogin();
+            }
         }
 
         function cerrarModal() {
@@ -583,9 +585,10 @@
         }
 
         function mostrarLogin() {
-            document.getElementById('modalTitle').innerText = "Acceso Administrador";
+            document.getElementById('modalTitle').innerText = "Acceso Restringido - Administrador";
             document.getElementById('modalBody').innerHTML = `
                 <div style="max-width: 400px; margin: auto; padding: 20px;">
+                    <p style="margin-bottom: 15px; color: var(--gray-color); text-align:center;">Debe iniciar sesión con cuenta de administrador.</p>
                     <div class="form-group">
                         <label>Correo Electrónico:</label>
                         <input type="email" id="adminEmail" placeholder="admin@noticias.com">
@@ -594,7 +597,7 @@
                         <label>Contraseña:</label>
                         <input type="password" id="adminPass" placeholder="••••••••">
                     </div>
-                    <button class="btn-primary" style="width: 100%;" onclick="loginFirebase()">Iniciar Sesión</button>
+                    <button class="btn-primary" style="width: 100%;" onclick="loginFirebase()">Ingresar al Panel</button>
                 </div>
             `;
         }
@@ -603,18 +606,38 @@
             const email = document.getElementById('adminEmail').value;
             const pass = document.getElementById('adminPass').value;
             auth.signInWithEmailAndPassword(email, pass)
-                .catch(error => alert("Error de acceso: " + error.message));
+                .then(() => {
+                    cargarPanelGestion();
+                })
+                .catch(error => alert("Error de autenticación: " + error.message));
+        }
+
+        function cerrarSesionFirebase() {
+            auth.signOut().then(() => {
+                cerrarModal();
+                alert("Sesión cerrada correctamente.");
+            });
         }
 
         function cargarPanelGestion(noticiaAEditar = null) {
+            // Doble validación de seguridad
+            if (!auth.currentUser) {
+                mostrarLogin();
+                return;
+            }
+
             document.getElementById('modalTitle').innerText = noticiaAEditar ? "Editar Noticia" : "Panel de Gestión de Noticias";
             const ahora = new Date().toISOString().slice(0, 16);
 
             document.getElementById('modalBody').innerHTML = `
-                <button class="btn-primary" style="margin-bottom: 20px;" onclick="cargarPanelGestion()">+ Crear Nueva Noticia</button>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="cargarPanelGestion()">+ Crear Nueva Noticia</button>
+                    <button class="btn-danger" onclick="cerrarSesionFirebase()">Cerrar Sesión</button>
+                </div>
                 
                 <form id="newsForm" onsubmit="guardarNoticiaFirebase(event)" style="background: var(--light-color); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
                     <input type="hidden" id="noticiaId" value="${noticiaAEditar ? noticiaAEditar.id : ''}">
+                    <input type="hidden" id="urlMediaExistente" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
                     
                     <div class="form-group">
                         <label>Título *</label>
@@ -652,9 +675,16 @@
                         </div>
                     </div>
 
+                    <!-- OPCIÓN 1: SUBIR ARCHIVO DESDE EL COMPUTADOR -->
                     <div class="form-group">
-                        <label>URL Multimedia (Imagen o Video MP4)</label>
-                        <input type="url" id="urlMediaInput" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
+                        <label>Subir Archivo Multimedia (Foto o Video MP4 desde tu dispositivo)</label>
+                        <input type="file" id="archivoInput" accept="image/*,video/mp4">
+                    </div>
+
+                    <!-- OPCIÓN 2: PEGANDO ENLACE DIRECTO -->
+                    <div class="form-group">
+                        <label>O pegar URL Multimedia externa</label>
+                        <input type="url" id="urlMediaInput" placeholder="https://..." value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
                     </div>
 
                     <div class="form-group">
@@ -667,7 +697,7 @@
                         <input type="text" id="hashtagsInput" value="${noticiaAEditar ? noticiaAEditar.hashtags : ''}">
                     </div>
 
-                    <button type="submit" class="btn-primary">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
+                    <button type="submit" class="btn-primary" id="btnGuardar">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
                 </form>
 
                 <h4>Noticias Registradas</h4>
@@ -698,16 +728,41 @@
             });
         }
 
-        function guardarNoticiaFirebase(event) {
+        async function guardarNoticiaFirebase(event) {
             event.preventDefault();
+            
+            const btnGuardar = document.getElementById('btnGuardar');
+            btnGuardar.innerText = "Guardando...";
+            btnGuardar.disabled = true;
+
             const id = document.getElementById('noticiaId').value;
+            const archivoInput = document.getElementById('archivoInput').files[0];
+            let urlMedia = document.getElementById('urlMediaInput').value;
+
+            // Si se seleccionó un archivo para subir, se sube a Firebase Storage
+            if (archivoInput) {
+                try {
+                    const storageRef = storage.ref().child('multimedia/' + Date.now() + '_' + archivoInput.name);
+                    const snapshot = await storageRef.put(archivoInput);
+                    urlMedia = await snapshot.ref.getDownloadURL();
+                } catch (error) {
+                    alert("Error al subir archivo: " + error.message);
+                    btnGuardar.innerText = "Publicar Noticia";
+                    btnGuardar.disabled = false;
+                    return;
+                }
+            } else if (!urlMedia) {
+                // Si no se subió archivo ni se puso URL, mantiene el que ya tenía (si es edición)
+                urlMedia = document.getElementById('urlMediaExistente').value;
+            }
+
             const data = {
                 titulo: document.getElementById('tituloInput').value,
                 categoria: document.getElementById('categoriaInput').value,
                 fecha: document.getElementById('fechaInput').value,
                 autor: document.getElementById('autorInput').value || 'Redacción',
                 tipoMedia: document.getElementById('tipoMediaInput').value,
-                urlMedia: document.getElementById('urlMediaInput').value,
+                urlMedia: urlMedia,
                 cuerpo: document.getElementById('cuerpoInput').value,
                 hashtags: document.getElementById('hashtagsInput').value
             };
@@ -715,9 +770,13 @@
             const promesa = id ? db.collection("noticias").doc(id).update(data) : db.collection("noticias").add(data);
 
             promesa.then(() => {
-                alert("¡Guardado correctamente en Firebase!");
+                alert("¡Guardado correctamente!");
                 cargarPanelGestion();
-            }).catch(err => alert("Error: " + err.message));
+            }).catch(err => {
+                alert("Error: " + err.message);
+                btnGuardar.innerText = "Publicar Noticia";
+                btnGuardar.disabled = false;
+            });
         }
 
         function prepararEdicion(id) {
@@ -735,3 +794,5 @@
     </script>
 </body>
 </html>
+
+
