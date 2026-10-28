@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOTICIAS INFOSUCHI</title>
+    <title>Portal de Noticias</title>
     <!-- Google Fonts & FontAwesome para iconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <style>
         :root {
@@ -44,25 +43,56 @@
         header {
             background: linear-gradient(135deg, #1a73e8, #0d47a1);
             color: white;
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 5px 12px;
+            width: 260px;
+            max-width: 100%;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 0.9rem;
+            width: 100%;
+            padding-left: 8px;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-box i {
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .admin-btn {
             background-color: rgba(255, 255, 255, 0.2);
             border: 1px solid white;
             color: white;
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
@@ -70,6 +100,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.9rem;
         }
 
         .admin-btn:hover {
@@ -87,16 +118,23 @@
             flex: 1;
         }
 
+        /* MEJORA MÓVIL: Menús adaptados en pantallas pequeñas */
         @media (max-width: 1024px) {
             .main-container {
                 grid-template-columns: 1fr;
             }
-            .left-sidebar, .right-sidebar {
-                display: none;
+            .left-sidebar {
+                order: 2; /* Manda las secciones debajo del feed o se muestra compacto */
+            }
+            .right-sidebar {
+                order: 3;
+            }
+            .feed-container {
+                order: 1;
             }
         }
 
-        .left-sidebar {
+        .left-sidebar, .right-sidebar {
             background: white;
             border-radius: 8px;
             padding: 20px;
@@ -104,7 +142,7 @@
             height: fit-content;
         }
 
-        .left-sidebar h3 {
+        .left-sidebar h3, .right-sidebar h3 {
             font-size: 1.1rem;
             margin-bottom: 15px;
             color: var(--gray-color);
@@ -112,13 +150,33 @@
             letter-spacing: 0.5px;
         }
 
+        .right-sidebar h3 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
         .category-list {
             list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* Permitir desplazamiento horizontal de categorías en celulares si se desea */
+        @media (max-width: 1024px) {
+            .category-list {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 5px;
+            }
+            .category-list li {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
         }
 
         .category-list li {
             padding: 10px 12px;
-            margin-bottom: 5px;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
@@ -186,20 +244,26 @@
             color: var(--gray-color);
         }
 
+        /* MEJORA DE IMAGEN: Se ajusta completa sin recortarse */
         .news-media {
             width: 100%;
-            max-height: 400px;
-            background-color: #000;
+            max-height: 500px;
+            background-color: #f1f3f4;
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .news-media img, .news-media video {
             width: 100%;
             height: auto;
-            max-height: 400px;
-            object-fit: cover;
+            max-height: 500px;
+            object-fit: contain; /* Muestra la imagen completa */
+            display: block;
+            margin: 0 auto;
         }
 
         .news-body {
@@ -225,22 +289,58 @@
             font-weight: 500;
         }
 
-        .right-sidebar {
+        /* ESTILOS DE ANUNCIANTES */
+        .ad-banner-card {
             background: white;
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px 20px;
+            border: 1px dashed var(--primary-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            height: fit-content;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s;
         }
 
-        .right-sidebar h3 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
+        .ad-banner-card:hover {
+            transform: translateY(-2px);
+            background-color: #fafbfc;
+        }
+
+        .ad-banner-img {
+            width: 90px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .ad-banner-content h4 {
+            font-size: 0.95rem;
+            color: var(--dark-color);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ad-banner-content p {
+            font-size: 0.85rem;
             color: var(--gray-color);
+            line-height: 1.4;
+        }
+
+        .ad-badge {
+            font-size: 0.65rem;
+            background-color: #fef3c7;
+            color: #d97706;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
         }
 
         .latest-item {
@@ -280,7 +380,7 @@
         .modal-content {
             background: white;
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -333,13 +433,19 @@
 
         .form-group textarea {
             resize: vertical;
-            height: 120px;
+            height: 100px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         .btn-primary {
@@ -370,10 +476,33 @@
             cursor: pointer;
         }
 
+        .admin-nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .admin-nav-tabs button {
+            background: #e4e7eb;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray-color);
+        }
+
+        .admin-nav-tabs button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
         .admin-news-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .admin-news-table th, .admin-news-table td {
@@ -401,7 +530,11 @@
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-globe"></i> Portal de Noticias Infosuchi</h1>
+        <h1><i class="fa-solid fa-globe"></i> Portal de Noticias</h1>
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Buscar noticias..." oninput="filtrarBusqueda()">
+        </div>
         <button class="admin-btn" onclick="abrirPanelAdmin()"><i class="fa-solid fa-lock"></i> Panel Administrador</button>
     </header>
 
@@ -432,7 +565,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 Portal de Noticias Infosuchi. Todos los derechos reservados.</p>
+        <p>&copy; 2026 Portal de Noticias. Hospedado en GitHub Pages con Firebase.</p>
     </footer>
 
     <!-- Modal Admin -->
@@ -460,34 +593,63 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
-        const storage = firebase.storage();
 
         let noticias = [];
+        let anunciantes = [];
         let categoriaActual = 'Todas';
+        let terminoBusqueda = '';
 
         document.addEventListener('DOMContentLoaded', () => {
-            escucharNoticiasFirestore();
+            escucharDatosFirestore();
         });
 
-        function escucharNoticiasFirestore() {
+        // Sincronización en tiempo real con Firestore para Noticias y Anunciantes
+        function escucharDatosFirestore() {
             db.collection("noticias").orderBy("fecha", "desc").onSnapshot((snapshot) => {
                 noticias = [];
                 snapshot.forEach((doc) => {
                     noticias.push({ id: doc.id, ...doc.data() });
                 });
-                renderizarNoticias(categoriaActual);
+                aplicarFiltrosYRenderizar();
                 renderizarUltimasNoticias();
+            });
+
+            db.collection("anunciantes").onSnapshot((snapshot) => {
+                anunciantes = [];
+                snapshot.forEach((doc) => {
+                    anunciantes.push({ id: doc.id, ...doc.data() });
+                });
+                aplicarFiltrosYRenderizar();
             });
         }
 
-        function renderizarNoticias(cat = 'Todas') {
+        function aplicarFiltrosYRenderizar() {
+            let filtradas = noticias;
+
+            if (categoriaActual !== 'Todas') {
+                filtradas = filtradas.filter(n => n.categoria === categoriaActual);
+            }
+
+            if (terminoBusqueda.trim() !== '') {
+                const query = terminoBusqueda.toLowerCase();
+                filtradas = filtradas.filter(n => 
+                    (n.titulo && n.titulo.toLowerCase().includes(query)) ||
+                    (n.cuerpo && n.cuerpo.toLowerCase().includes(query)) ||
+                    (n.hashtags && n.hashtags.toLowerCase().includes(query)) ||
+                    (n.autor && n.autor.toLowerCase().includes(query))
+                );
+            }
+
+            renderizarNoticiasConAnunciantes(filtradas);
+        }
+
+        function renderizarNoticiasConAnunciantes(filtradas) {
             const feed = document.getElementById('newsFeed');
             feed.innerHTML = '';
 
-            let filtradas = cat === 'Todas' ? noticias : noticias.filter(n => n.categoria === cat);
-
             if (filtradas.length === 0) {
-                feed.innerHTML = `<div style="background:white; padding:20px; border-radius:8px; text-align:center; color:var(--gray-color);">No hay noticias publicadas en esta sección.</div>`;
+                feed.innerHTML = `<div style="background:white; padding:20px; border-radius:8px; text-align:center; color:var(--gray-color);">No hay noticias publicadas que coincidan con la búsqueda o sección.</div>`;
+                renderizarAnunciantesAlPie(feed);
                 return;
             }
 
@@ -536,6 +698,41 @@
                 `;
                 feed.appendChild(card);
             });
+
+            // Mostrar anunciantes activos al pie del feed de la sección actual
+            renderizarAnunciantesAlPie(feed);
+        }
+
+        function renderizarAnunciantesAlPie(contenedor) {
+            // Filtrar anunciantes que apliquen a "Todas" o a la categoría seleccionada actual
+            let anunciosVisibles = anunciantes.filter(ad => ad.seccion === 'Todas' || ad.seccion === categoriaActual);
+
+            if (anunciosVisibles.length > 0) {
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.flexDirection = 'column';
+                wrapper.style.gap = '15px';
+                wrapper.style.marginTop = '10px';
+
+                anunciosVisibles.forEach(ad => {
+                    const adCard = document.createElement(ad.enlace ? 'a' : 'div');
+                    adCard.className = 'ad-banner-card';
+                    if (ad.enlace) {
+                        adCard.href = ad.enlace;
+                        adCard.target = '_blank';
+                    }
+
+                    adCard.innerHTML = `
+                        <img src="${ad.imagen}" alt="${ad.titulo}" class="ad-banner-img">
+                        <div class="ad-banner-content">
+                            <h4>${ad.titulo} <span class="ad-badge">Patrocinado</span></h4>
+                            <p>${ad.texto}</p>
+                        </div>
+                    `;
+                    wrapper.appendChild(adCard);
+                });
+                contenedor.appendChild(wrapper);
+            }
         }
 
         function renderizarUltimasNoticias() {
@@ -564,19 +761,24 @@
             categoriaActual = categoria;
             document.querySelectorAll('.category-list li').forEach(li => li.classList.remove('active'));
             elemento.classList.add('active');
-            renderizarNoticias(categoria);
+            aplicarFiltrosYRenderizar();
         }
 
-        // --- AUTENTICACIÓN ESTRICTA Y PANEL ---
+        function filtrarBusqueda() {
+            terminoBusqueda = document.getElementById('searchInput').value;
+            aplicarFiltrosYRenderizar();
+        }
+
+        // --- AUTENTICACIÓN Y GESTIÓN FIREBASE ---
         function abrirPanelAdmin() {
             document.getElementById('adminModal').style.display = 'flex';
-            
-            const currentUser = auth.currentUser;
-            if (currentUser) {
-                cargarPanelGestion();
-            } else {
-                mostrarLogin();
-            }
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    cargarPanelGestionNoticias();
+                } else {
+                    mostrarLogin();
+                }
+            });
         }
 
         function cerrarModal() {
@@ -584,10 +786,9 @@
         }
 
         function mostrarLogin() {
-            document.getElementById('modalTitle').innerText = "Acceso Restringido - Administrador";
+            document.getElementById('modalTitle').innerText = "Acceso Administrador";
             document.getElementById('modalBody').innerHTML = `
                 <div style="max-width: 400px; margin: auto; padding: 20px;">
-                    <p style="margin-bottom: 15px; color: var(--gray-color); text-align:center;">Debe iniciar sesión con cuenta de administrador.</p>
                     <div class="form-group">
                         <label>Correo Electrónico:</label>
                         <input type="email" id="adminEmail" placeholder="admin@noticias.com">
@@ -596,7 +797,7 @@
                         <label>Contraseña:</label>
                         <input type="password" id="adminPass" placeholder="••••••••">
                     </div>
-                    <button class="btn-primary" style="width: 100%;" onclick="loginFirebase()">Ingresar al Panel</button>
+                    <button class="btn-primary" style="width: 100%;" onclick="loginFirebase()">Iniciar Sesión</button>
                 </div>
             `;
         }
@@ -605,37 +806,33 @@
             const email = document.getElementById('adminEmail').value;
             const pass = document.getElementById('adminPass').value;
             auth.signInWithEmailAndPassword(email, pass)
-                .then(() => {
-                    cargarPanelGestion();
-                })
-                .catch(error => alert("Error de autenticación: " + error.message));
+                .catch(error => alert("Error de acceso: " + error.message));
         }
 
-        function cerrarSesionFirebase() {
+        function logoutFirebase() {
             auth.signOut().then(() => {
-                cerrarModal();
-                alert("Sesión cerrada correctamente.");
-            });
+                mostrarLogin();
+            }).catch(error => alert("Error al cerrar sesión: " + error.message));
         }
 
-        function cargarPanelGestion(noticiaAEditar = null) {
-            if (!auth.currentUser) {
-                mostrarLogin();
-                return;
-            }
-
-            document.getElementById('modalTitle').innerText = noticiaAEditar ? "Editar Noticia" : "Panel de Gestión de Noticias";
+        // PESTAÑAS DE ADMINISTRACIÓN (Noticias / Anunciantes)
+        function cargarPanelGestionNoticias(noticiaAEditar = null) {
+            document.getElementById('modalTitle').innerText = "Panel de Administración";
             const ahora = new Date().toISOString().slice(0, 16);
 
             document.getElementById('modalBody').innerHTML = `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                    <button class="btn-primary" onclick="cargarPanelGestion()">+ Crear Nueva Noticia</button>
-                    <button class="btn-danger" onclick="cerrarSesionFirebase()">Cerrar Sesión</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div class="admin-nav-tabs" style="margin-bottom:0; border:none;">
+                        <button class="active" onclick="cargarPanelGestionNoticias()">Gestión de Noticias</button>
+                        <button onclick="cargarPanelGestionAnunciantes()">Gestión de Anunciantes</button>
+                    </div>
+                    <button class="btn-danger" onclick="logoutFirebase()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
+
+                <button class="btn-primary" style="margin-bottom: 20px;" onclick="cargarPanelGestionNoticias()">+ Crear Nueva Noticia</button>
                 
                 <form id="newsForm" onsubmit="guardarNoticiaFirebase(event)" style="background: var(--light-color); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
                     <input type="hidden" id="noticiaId" value="${noticiaAEditar ? noticiaAEditar.id : ''}">
-                    <input type="hidden" id="urlMediaExistente" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
                     
                     <div class="form-group">
                         <label>Título *</label>
@@ -673,16 +870,9 @@
                         </div>
                     </div>
 
-                    <!-- OPCIÓN 1: SUBIR ARCHIVO DESDE EL COMPUTADOR -->
                     <div class="form-group">
-                        <label>Subir Archivo Multimedia (Foto o Video MP4 desde tu dispositivo)</label>
-                        <input type="file" id="archivoInput" accept="image/*,video/mp4">
-                    </div>
-
-                    <!-- OPCIÓN 2: PEGANDO ENLACE DIRECTO -->
-                    <div class="form-group">
-                        <label>O pegar URL Multimedia externa</label>
-                        <input type="url" id="urlMediaInput" placeholder="https://..." value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
+                        <label>URL Multimedia (Imagen o Video MP4)</label>
+                        <input type="url" id="urlMediaInput" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
                     </div>
 
                     <div class="form-group">
@@ -695,7 +885,7 @@
                         <input type="text" id="hashtagsInput" value="${noticiaAEditar ? noticiaAEditar.hashtags : ''}">
                     </div>
 
-                    <button type="submit" class="btn-primary" id="btnGuardar">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
+                    <button type="submit" class="btn-primary">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
                 </form>
 
                 <h4>Noticias Registradas</h4>
@@ -706,11 +896,12 @@
                     <tbody id="adminTableBody"></tbody>
                 </table>
             `;
-            renderizarTablaAdmin();
+            renderizarTablaAdminNoticias();
         }
 
-        function renderizarTablaAdmin() {
+        function renderizarTablaAdminNoticias() {
             const tbody = document.getElementById('adminTableBody');
+            if(!tbody) return;
             tbody.innerHTML = '';
             noticias.forEach(noticia => {
                 const tr = document.createElement('tr');
@@ -718,7 +909,7 @@
                     <td><strong>${noticia.titulo}</strong></td>
                     <td>${noticia.categoria}</td>
                     <td>
-                        <button class="btn-warning" onclick="prepararEdicion('${noticia.id}')">Editar</button>
+                        <button class="btn-warning" onclick="prepararEdicionNoticia('${noticia.id}')">Editar</button>
                         <button class="btn-danger" onclick="eliminarNoticiaFirebase('${noticia.id}')">Eliminar</button>
                     </td>
                 `;
@@ -726,63 +917,152 @@
             });
         }
 
-        async function guardarNoticiaFirebase(event) {
+        function guardarNoticiaFirebase(event) {
             event.preventDefault();
-            
-            const btnGuardar = document.getElementById('btnGuardar');
-            btnGuardar.innerText = "Guardando...";
-            btnGuardar.disabled = true;
+            const id = document.getElementById('noticiaId').value;
+            const data = {
+                titulo: document.getElementById('tituloInput').value,
+                categoria: document.getElementById('categoriaInput').value,
+                fecha: document.getElementById('fechaInput').value,
+                autor: document.getElementById('autorInput').value || 'Redacción',
+                tipoMedia: document.getElementById('tipoMediaInput').value,
+                urlMedia: document.getElementById('urlMediaInput').value,
+                cuerpo: document.getElementById('cuerpoInput').value,
+                hashtags: document.getElementById('hashtagsInput').value
+            };
 
-            try {
-                const id = document.getElementById('noticiaId').value;
-                const archivoInput = document.getElementById('archivoInput').files[0];
-                let urlMedia = document.getElementById('urlMediaInput').value;
+            const promesa = id ? db.collection("noticias").doc(id).update(data) : db.collection("noticias").add(data);
 
-                if (archivoInput) {
-                    const storageRef = storage.ref().child('multimedia/' + Date.now() + '_' + archivoInput.name);
-                    const snapshot = await storageRef.put(archivoInput);
-                    urlMedia = await snapshot.ref.getDownloadURL();
-                } else if (!urlMedia) {
-                    urlMedia = document.getElementById('urlMediaExistente').value;
-                }
-
-                const data = {
-                    titulo: document.getElementById('tituloInput').value,
-                    categoria: document.getElementById('categoriaInput').value,
-                    fecha: document.getElementById('fechaInput').value,
-                    autor: document.getElementById('autorInput').value || 'Redacción',
-                    tipoMedia: document.getElementById('tipoMediaInput').value,
-                    urlMedia: urlMedia,
-                    cuerpo: document.getElementById('cuerpoInput').value,
-                    hashtags: document.getElementById('hashtagsInput').value
-                };
-
-                if (id) {
-                    await db.collection("noticias").doc(id).update(data);
-                } else {
-                    await db.collection("noticias").add(data);
-                }
-
-                alert("¡Noticia guardada con éxito!");
-                cargarPanelGestion();
-
-            } catch (error) {
-                console.error("Error al guardar:", error);
-                alert("Error al guardar: " + error.message);
-                btnGuardar.innerText = "Publicar Noticia";
-                btnGuardar.disabled = false;
-            }
+            promesa.then(() => {
+                alert("¡Noticia guardada correctamente!");
+                cargarPanelGestionNoticias();
+            }).catch(err => alert("Error: " + err.message));
         }
 
-        function prepararEdicion(id) {
+        function prepararEdicionNoticia(id) {
             const noticia = noticias.find(n => n.id === id);
-            if (noticia) cargarPanelGestion(noticia);
+            if (noticia) cargarPanelGestionNoticias(noticia);
         }
 
         function eliminarNoticiaFirebase(id) {
-            if (confirm("¿Seguro que deseas eliminar esta noticia de Firebase?")) {
+            if (confirm("¿Seguro que deseas eliminar esta noticia?")) {
                 db.collection("noticias").doc(id).delete()
-                    .then(() => cargarPanelGestion())
+                    .then(() => cargarPanelGestionNoticias())
+                    .catch(err => alert("Error al eliminar: " + err.message));
+            }
+        }
+
+        // --- GESTIÓN DE ANUNCIANTES EN EL PANEL ADMIN ---
+        function cargarPanelGestionAnunciantes(anuncianteAEditar = null) {
+            document.getElementById('modalTitle').innerText = "Panel de Administración";
+
+            document.getElementById('modalBody').innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div class="admin-nav-tabs" style="margin-bottom:0; border:none;">
+                        <button onclick="cargarPanelGestionNoticias()">Gestión de Noticias</button>
+                        <button class="active" onclick="cargarPanelGestionAnunciantes()">Gestión de Anunciantes</button>
+                    </div>
+                    <button class="btn-danger" onclick="logoutFirebase()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+                </div>
+
+                <button class="btn-primary" style="margin-bottom: 20px;" onclick="cargarPanelGestionAnunciantes()">+ Nuevo Anunciante</button>
+                
+                <form id="adForm" onsubmit="guardarAnuncianteFirebase(event)" style="background: var(--light-color); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                    <input type="hidden" id="anuncianteId" value="${anuncianteAEditar ? anuncianteAEditar.id : ''}">
+                    
+                    <div class="form-group">
+                        <label>Nombre del Anunciante / Título *</label>
+                        <input type="text" id="adTituloInput" required value="${anuncianteAEditar ? anuncianteAEditar.titulo : ''}" placeholder="Ej. Empresa X">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mostrar en Sección *</label>
+                            <select id="adSeccionInput">
+                                <option value="Todas" ${anuncianteAEditar && anuncianteAEditar.seccion === 'Todas' ? 'selected' : ''}>Todas las secciones</option>
+                                <option value="Nacional" ${anuncianteAEditar && anuncianteAEditar.seccion === 'Nacional' ? 'selected' : ''}>Nacional</option>
+                                <option value="Internacional" ${anuncianteAEditar && anuncianteAEditar.seccion === 'Internacional' ? 'selected' : ''}>Internacional</option>
+                                <option value="Tecnología" ${anuncianteAEditar && anuncianteAEditar.seccion === 'Tecnología' ? 'selected' : ''}>Tecnología</option>
+                                <option value="Deportes" ${anuncianteAEditar && anuncianteAEditar.seccion === 'Deportes' ? 'selected' : ''}>Deportes</option>
+                                <option value="Cultura" ${anuncianteAEditar && anuncianteAEditar.seccion === 'Cultura' ? 'selected' : ''}>Cultura</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>URL de Imagen o Banner (URL) *</label>
+                            <input type="url" id="adImagenInput" required value="${anuncianteAEditar ? anuncianteAEditar.imagen : ''}" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Texto Promocional o Descripción *</label>
+                        <textarea id="adTextoInput" required placeholder="Texto breve del anuncio...">${anuncianteAEditar ? anuncianteAEditar.texto : ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Enlace Web de Destino (Opcional)</label>
+                        <input type="url" id="adEnlaceInput" value="${anuncianteAEditar ? anuncianteAEditar.enlace : ''}" placeholder="https://whatsapp.com/...">
+                    </div>
+
+                    <button type="submit" class="btn-primary">${anuncianteAEditar ? 'Actualizar Anunciante' : 'Guardar Anunciante'}</button>
+                </form>
+
+                <h4>Anunciantes Registrados</h4>
+                <table class="admin-news-table">
+                    <thead>
+                        <tr><th>Título</th><th>Sección</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="adminAdsTableBody"></tbody>
+                </table>
+            `;
+            renderizarTablaAdminAnunciantes();
+        }
+
+        function renderizarTablaAdminAnunciantes() {
+            const tbody = document.getElementById('adminAdsTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            anunciantes.forEach(ad => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${ad.titulo}</strong></td>
+                    <td>${ad.seccion}</td>
+                    <td>
+                        <button class="btn-warning" onclick="prepararEdicionAnunciante('${ad.id}')">Editar</button>
+                        <button class="btn-danger" onclick="eliminarAnuncianteFirebase('${ad.id}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function guardarAnuncianteFirebase(event) {
+            event.preventDefault();
+            const id = document.getElementById('anuncianteId').value;
+            const data = {
+                titulo: document.getElementById('adTituloInput').value,
+                seccion: document.getElementById('adSeccionInput').value,
+                imagen: document.getElementById('adImagenInput').value,
+                texto: document.getElementById('adTextoInput').value,
+                enlace: document.getElementById('adEnlaceInput').value
+            };
+
+            const promesa = id ? db.collection("anunciantes").doc(id).update(data) : db.collection("anunciantes").add(data);
+
+            promesa.then(() => {
+                alert("¡Anunciante guardado correctamente!");
+                cargarPanelGestionAnunciantes();
+            }).catch(err => alert("Error: " + err.message));
+        }
+
+        function prepararEdicionAnunciante(id) {
+            const ad = anunciantes.find(a => a.id === id);
+            if (ad) cargarPanelGestionAnunciantes(ad);
+        }
+
+        function eliminarAnuncianteFirebase(id) {
+            if (confirm("¿Seguro que deseas eliminar este anunciante?")) {
+                db.collection("anunciantes").doc(id).delete()
+                    .then(() => cargarPanelGestionAnunciantes())
                     .catch(err => alert("Error al eliminar: " + err.message));
             }
         }
