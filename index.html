@@ -43,7 +43,7 @@
         header {
             background: linear-gradient(135deg, #1a73e8, #0d47a1);
             color: white;
-            padding: 1.2rem 1.5rem;
+            padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -53,7 +53,7 @@
         }
 
         header h1 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -92,7 +92,7 @@
             background-color: rgba(255, 255, 255, 0.2);
             border: 1px solid white;
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
@@ -100,70 +100,46 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .admin-btn:hover {
             background-color: rgba(255, 255, 255, 0.3);
         }
 
+        /* ESTRUCTURA GENERAL Y RESPONSIVA MEJORADA */
         .main-container {
             display: grid;
-            grid-template-columns: 260px 1fr 300px;
-            gap: 20px;
-            max-width: 1400px;
-            margin: 20px auto;
+            grid-template-columns: 240px 1fr 280px;
+            gap: 15px;
+            max-width: 1350px;
+            margin: 15px auto;
             width: 100%;
-            padding: 0 15px;
+            padding: 0 10px;
             flex: 1;
         }
 
-        /* MEJORA MÓVIL: Menús adaptados en pantallas pequeñas */
-        @media (max-width: 1024px) {
+        @media (max-width: 1100px) {
+            .main-container {
+                grid-template-columns: 200px 1fr 240px;
+            }
+        }
+
+        /* En Celulares: Menú superior colapsable horizontal o barra lateral compacta sin mandarlo al fondo */
+        @media (max-width: 850px) {
             .main-container {
                 grid-template-columns: 1fr;
             }
             .left-sidebar {
-                order: 2; /* Manda las secciones debajo del feed o se muestra compacto */
+                order: 1;
+                margin-bottom: 5px;
+            }
+            .feed-container {
+                order: 2;
             }
             .right-sidebar {
                 order: 3;
             }
-            .feed-container {
-                order: 1;
-            }
-        }
-
-        .left-sidebar, .right-sidebar {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            height: fit-content;
-        }
-
-        .left-sidebar h3, .right-sidebar h3 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: var(--gray-color);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .right-sidebar h3 {
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
-        }
-
-        .category-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        /* Permitir desplazamiento horizontal de categorías en celulares si se desea */
-        @media (max-width: 1024px) {
             .category-list {
                 flex-direction: row;
                 overflow-x: auto;
@@ -175,16 +151,45 @@
             }
         }
 
+        .left-sidebar, .right-sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .left-sidebar h3, .right-sidebar h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: var(--gray-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .right-sidebar h3 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .category-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .category-list li {
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
             font-weight: 500;
+            font-size: 0.9rem;
             color: var(--gray-color);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .category-list li:hover, .category-list li.active {
@@ -195,7 +200,7 @@
         .feed-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .news-card {
@@ -204,10 +209,16 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .news-card.resaltada {
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 10px rgba(26, 115, 232, 0.3);
         }
 
         .news-header-info {
-            padding: 15px 20px 10px;
+            padding: 12px 15px 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -216,38 +227,38 @@
         .news-category-badge {
             background-color: var(--secondary-color);
             color: var(--primary-color);
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
         }
 
         .news-date {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--gray-color);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
         .news-card h2 {
-            padding: 0 20px;
-            font-size: 1.4rem;
+            padding: 0 15px;
+            font-size: 1.3rem;
             color: var(--dark-color);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .news-meta-info {
-            padding: 0 20px 10px;
-            font-size: 0.9rem;
+            padding: 0 15px 8px;
+            font-size: 0.85rem;
             color: var(--gray-color);
         }
 
-        /* MEJORA DE IMAGEN: Se ajusta completa sin recortarse */
+        /* IMAGEN COMPLETA */
         .news-media {
             width: 100%;
-            max-height: 500px;
+            max-height: 450px;
             background-color: #f1f3f4;
             display: flex;
             justify-content: center;
@@ -260,45 +271,46 @@
         .news-media img, .news-media video {
             width: 100%;
             height: auto;
-            max-height: 500px;
-            object-fit: contain; /* Muestra la imagen completa */
+            max-height: 450px;
+            object-fit: contain;
             display: block;
             margin: 0 auto;
         }
 
         .news-body {
-            padding: 15px 20px;
-            line-height: 1.6;
+            padding: 12px 15px;
+            line-height: 1.5;
+            font-size: 0.95rem;
             color: #3c4043;
             white-space: pre-line;
         }
 
         .news-hashtags {
-            padding: 0 20px 15px;
+            padding: 0 15px 12px;
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
 
         .hashtag {
             background-color: #f1f3f4;
             color: var(--gray-color);
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
         }
 
-        /* ESTILOS DE ANUNCIANTES */
+        /* ANUNCIANTES */
         .ad-banner-card {
             background: white;
             border-radius: 8px;
-            padding: 15px 20px;
+            padding: 12px 15px;
             border: 1px dashed var(--primary-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             text-decoration: none;
             color: inherit;
             transition: transform 0.2s;
@@ -309,42 +321,44 @@
             background-color: #fafbfc;
         }
 
-        .ad-banner-img {
-            width: 90px;
-            height: 70px;
+        .ad-banner-media {
+            width: 80px;
+            height: 60px;
             object-fit: cover;
             border-radius: 6px;
             flex-shrink: 0;
             border: 1px solid var(--border-color);
+            background: #000;
         }
 
         .ad-banner-content h4 {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--dark-color);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
         .ad-banner-content p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--gray-color);
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         .ad-badge {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             background-color: #fef3c7;
             color: #d97706;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 2px 5px;
+            border-radius: 3px;
             font-weight: 700;
             text-transform: uppercase;
         }
 
+        /* ULTIMAS NOTICIAS (ENLACES CLICKEABLES) */
         .latest-item {
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #f1f3f4;
         }
 
@@ -353,13 +367,20 @@
         }
 
         .latest-item h4 {
-            font-size: 0.95rem;
-            color: var(--dark-color);
-            margin-bottom: 4px;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            margin-bottom: 3px;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .latest-item h4:hover {
+            color: #0d47a1;
         }
 
         .latest-item span {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--gray-color);
         }
 
@@ -374,7 +395,7 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 20px;
+            padding: 15px;
         }
 
         .modal-content {
@@ -392,7 +413,7 @@
         .modal-header {
             background: var(--dark-color);
             color: white;
-            padding: 15px 20px;
+            padding: 12px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -402,44 +423,44 @@
             background: none;
             border: none;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
             flex: 1;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .form-group input, .form-group textarea, .form-group select {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .form-group textarea {
             resize: vertical;
-            height: 100px;
+            height: 90px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 12px;
         }
 
         @media (max-width: 600px) {
@@ -452,46 +473,50 @@
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .btn-danger {
             background-color: var(--danger-color);
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 0.85rem;
         }
 
         .btn-warning {
             background-color: #f9ab00;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 0.85rem;
         }
 
         .admin-nav-tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
 
         .admin-nav-tabs button {
             background: #e4e7eb;
             border: none;
-            padding: 8px 15px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
             color: var(--gray-color);
+            font-size: 0.85rem;
         }
 
         .admin-nav-tabs button.active {
@@ -502,14 +527,14 @@
         .admin-news-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 10px;
         }
 
         .admin-news-table th, .admin-news-table td {
-            padding: 10px;
+            padding: 8px;
             border-bottom: 1px solid var(--border-color);
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .admin-news-table th {
@@ -520,8 +545,8 @@
             background-color: white;
             border-top: 1px solid var(--border-color);
             text-align: center;
-            padding: 15px;
-            font-size: 0.85rem;
+            padding: 12px;
+            font-size: 0.8rem;
             color: var(--gray-color);
             margin-top: auto;
         }
@@ -603,7 +628,6 @@
             escucharDatosFirestore();
         });
 
-        // Sincronización en tiempo real con Firestore para Noticias y Anunciantes
         function escucharDatosFirestore() {
             db.collection("noticias").orderBy("fecha", "desc").onSnapshot((snapshot) => {
                 noticias = [];
@@ -656,6 +680,7 @@
             filtradas.forEach(noticia => {
                 const card = document.createElement('article');
                 card.className = 'news-card';
+                card.id = `noticia-${noticia.id}`;
                 
                 const fechaFormateada = new Date(noticia.fecha).toLocaleString('es-ES', {
                     dateStyle: 'medium',
@@ -699,19 +724,17 @@
                 feed.appendChild(card);
             });
 
-            // Mostrar anunciantes activos al pie del feed de la sección actual
             renderizarAnunciantesAlPie(feed);
         }
 
         function renderizarAnunciantesAlPie(contenedor) {
-            // Filtrar anunciantes que apliquen a "Todas" o a la categoría seleccionada actual
             let anunciosVisibles = anunciantes.filter(ad => ad.seccion === 'Todas' || ad.seccion === categoriaActual);
 
             if (anunciosVisibles.length > 0) {
                 const wrapper = document.createElement('div');
                 wrapper.style.display = 'flex';
                 wrapper.style.flexDirection = 'column';
-                wrapper.style.gap = '15px';
+                wrapper.style.gap = '12px';
                 wrapper.style.marginTop = '10px';
 
                 anunciosVisibles.forEach(ad => {
@@ -722,8 +745,15 @@
                         adCard.target = '_blank';
                     }
 
+                    let mediaAdHTML = '';
+                    if (ad.tipoMedia === 'video') {
+                        mediaAdHTML = `<video src="${ad.imagen}" autoplay muted loop playsinline class="ad-banner-media"></video>`;
+                    } else {
+                        mediaAdHTML = `<img src="${ad.imagen}" alt="${ad.titulo}" class="ad-banner-media">`;
+                    }
+
                     adCard.innerHTML = `
-                        <img src="${ad.imagen}" alt="${ad.titulo}" class="ad-banner-img">
+                        ${mediaAdHTML}
                         <div class="ad-banner-content">
                             <h4>${ad.titulo} <span class="ad-badge">Patrocinado</span></h4>
                             <p>${ad.texto}</p>
@@ -735,6 +765,7 @@
             }
         }
 
+        // ÚNICAMENTE LAS ÚLTIMAS 5 NOTICIAS CON ENLACE CLICKEABLE
         function renderizarUltimasNoticias() {
             const latestList = document.getElementById('latestNewsList');
             latestList.innerHTML = '';
@@ -749,12 +780,32 @@
                 const item = document.createElement('div');
                 item.className = 'latest-item';
                 const fechaCorta = new Date(noticia.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+                
                 item.innerHTML = `
-                    <h4>${noticia.titulo}</h4>
+                    <h4 onclick="irANoticia('${noticia.id}', '${noticia.categoria}')">${noticia.titulo}</h4>
                     <span><i class="fa-regular fa-calendar"></i> ${fechaCorta} | ${noticia.categoria}</span>
                 `;
                 latestList.appendChild(item);
             });
+        }
+
+        // Función para cambiar de categoría automáticamente si la noticia no está en la vista actual y hacer scroll
+        function irANoticia(idNoticia, categoriaNoticia) {
+            if (categoriaActual !== 'Todas' && categoriaActual !== categoriaNoticia) {
+                const liTodas = document.querySelector('.category-list li');
+                filtrarCategoria('Todas', liTodas);
+            }
+
+            setTimeout(() => {
+                const tarjeta = document.getElementById(`noticia-${idNoticia}`);
+                if (tarjeta) {
+                    tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    tarjeta.classList.add('resaltada');
+                    setTimeout(() => {
+                        tarjeta.classList.remove('resaltada');
+                    }, 2500);
+                }
+            }, 100);
         }
 
         function filtrarCategoria(categoria, elemento) {
@@ -815,13 +866,12 @@
             }).catch(error => alert("Error al cerrar sesión: " + error.message));
         }
 
-        // PESTAÑAS DE ADMINISTRACIÓN (Noticias / Anunciantes)
         function cargarPanelGestionNoticias(noticiaAEditar = null) {
             document.getElementById('modalTitle').innerText = "Panel de Administración";
             const ahora = new Date().toISOString().slice(0, 16);
 
             document.getElementById('modalBody').innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                     <div class="admin-nav-tabs" style="margin-bottom:0; border:none;">
                         <button class="active" onclick="cargarPanelGestionNoticias()">Gestión de Noticias</button>
                         <button onclick="cargarPanelGestionAnunciantes()">Gestión de Anunciantes</button>
@@ -829,9 +879,9 @@
                     <button class="btn-danger" onclick="logoutFirebase()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
 
-                <button class="btn-primary" style="margin-bottom: 20px;" onclick="cargarPanelGestionNoticias()">+ Crear Nueva Noticia</button>
+                <button class="btn-primary" style="margin-bottom: 15px;" onclick="cargarPanelGestionNoticias()">+ Crear Nueva Noticia</button>
                 
-                <form id="newsForm" onsubmit="guardarNoticiaFirebase(event)" style="background: var(--light-color); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                <form id="newsForm" onsubmit="guardarNoticiaFirebase(event)" style="background: var(--light-color); padding: 12px; border-radius: 6px; margin-bottom: 20px;">
                     <input type="hidden" id="noticiaId" value="${noticiaAEditar ? noticiaAEditar.id : ''}">
                     
                     <div class="form-group">
@@ -952,12 +1002,12 @@
             }
         }
 
-        // --- GESTIÓN DE ANUNCIANTES EN EL PANEL ADMIN ---
+        // --- GESTIÓN DE ANUNCIANTES (CON OPCIÓN DE FOTO O VIDEO) ---
         function cargarPanelGestionAnunciantes(anuncianteAEditar = null) {
             document.getElementById('modalTitle').innerText = "Panel de Administración";
 
             document.getElementById('modalBody').innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                     <div class="admin-nav-tabs" style="margin-bottom:0; border:none;">
                         <button onclick="cargarPanelGestionNoticias()">Gestión de Noticias</button>
                         <button class="active" onclick="cargarPanelGestionAnunciantes()">Gestión de Anunciantes</button>
@@ -965,9 +1015,9 @@
                     <button class="btn-danger" onclick="logoutFirebase()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
 
-                <button class="btn-primary" style="margin-bottom: 20px;" onclick="cargarPanelGestionAnunciantes()">+ Nuevo Anunciante</button>
+                <button class="btn-primary" style="margin-bottom: 15px;" onclick="cargarPanelGestionAnunciantes()">+ Nuevo Anunciante</button>
                 
-                <form id="adForm" onsubmit="guardarAnuncianteFirebase(event)" style="background: var(--light-color); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                <form id="adForm" onsubmit="guardarAnuncianteFirebase(event)" style="background: var(--light-color); padding: 12px; border-radius: 6px; margin-bottom: 20px;">
                     <input type="hidden" id="anuncianteId" value="${anuncianteAEditar ? anuncianteAEditar.id : ''}">
                     
                     <div class="form-group">
@@ -988,9 +1038,17 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>URL de Imagen o Banner (URL) *</label>
-                            <input type="url" id="adImagenInput" required value="${anuncianteAEditar ? anuncianteAEditar.imagen : ''}" placeholder="https://...">
+                            <label>Tipo Multimedia del Anuncio *</label>
+                            <select id="adTipoMediaInput">
+                                <option value="imagen" ${anuncianteAEditar && anuncianteAEditar.tipoMedia === 'imagen' ? 'selected' : ''}>Fotografía / Banner</option>
+                                <option value="video" ${anuncianteAEditar && anuncianteAEditar.tipoMedia === 'video' ? 'selected' : ''}>Video (MP4)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL Multimedia del Anuncio (Imagen o Video MP4) *</label>
+                        <input type="url" id="adImagenInput" required value="${anuncianteAEditar ? anuncianteAEditar.imagen : ''}" placeholder="https://...">
                     </div>
 
                     <div class="form-group">
@@ -1041,6 +1099,7 @@
             const data = {
                 titulo: document.getElementById('adTituloInput').value,
                 seccion: document.getElementById('adSeccionInput').value,
+                tipoMedia: document.getElementById('adTipoMediaInput').value,
                 imagen: document.getElementById('adImagenInput').value,
                 texto: document.getElementById('adTextoInput').value,
                 enlace: document.getElementById('adEnlaceInput').value
