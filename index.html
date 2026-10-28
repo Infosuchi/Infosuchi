@@ -3,461 +3,498 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plataforma de Streaming en Vivo</title>
+    <title>Portal de Noticias</title>
+    <!-- Google Fonts & FontAwesome para iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --bg-color: #0f0f11;
-            --surface-color: #16161a;
-            --surface-accent: #222227;
-            --primary-color: #ff3366;
-            --text-color: #efefef;
-            --text-muted: #94a3b8;
-            --border-color: #2a2a35;
+            --primary-color: #1a73e8;
+            --secondary-color: #e8f0fe;
+            --dark-color: #202124;
+            --light-color: #f8f9fa;
+            --gray-color: #5f6368;
+            --border-color: #dadce0;
+            --danger-color: #d93025;
+            --success-color: #188038;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: block;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
         }
 
+        /* Cabecera / Portada */
         header {
-            background-color: var(--surface-color);
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            text-align: center;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         header h1 {
-            font-size: 1.5rem;
-            color: var(--text-color);
-            font-weight: 700;
-            letter-spacing: -0.5px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .main-layout {
-            display: table;
+        .admin-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Estructura Principal de 3 Columnas */
+        .main-container {
+            display: grid;
+            grid-template-columns: 260px 1fr 300px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 20px auto;
             width: 100%;
-            table-layout: fixed;
-            border-collapse: separate;
-            border-spacing: 15px;
-            padding: 5px;
+            padding: 0 15px;
+            flex: 1;
         }
 
-        .sidebar {
-            display: table-cell;
-            width: 280px;
-            vertical-align: top;
-            background-color: var(--surface-color);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .left-sidebar, .right-sidebar {
+                display: none;
+            }
+        }
+
+        /* Menú Izquierdo (Secciones) */
+        .left-sidebar {
+            background: white;
+            border-radius: 8px;
             padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: fit-content;
         }
 
-        .sidebar h2 {
+        .left-sidebar h3 {
             font-size: 1.1rem;
             margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--primary-color);
-            color: var(--text-color);
+            color: var(--gray-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .sidebar-content {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: var(--text-muted);
+        .category-list {
+            list-style: none;
         }
 
-        /* Fuerza a que cualquier iframe de Facebook o anuncio lateral sea responsivo */
-        .sidebar-content iframe, .sidebar-content img {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-width: 100% !important;
-            height: auto;
-            display: block;
+        .category-list li {
+            padding: 10px 12px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            font-weight: 500;
+            color: var(--gray-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-list li:hover, .category-list li.active {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        /* Centro (Blog de Noticias) */
+        .feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .news-card {
+            background: white;
             border-radius: 8px;
-        }
-
-        .center-content {
-            display: table-cell;
-            vertical-align: top;
-        }
-
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
             overflow: hidden;
-            background-color: #000;
-            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
-            margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
         }
 
-        .video-container iframe {
-            position: absolute;
+        .news-card:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .news-header-info {
+            padding: 15px 20px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .news-category-badge {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .news-date {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .news-card h2 {
+            padding: 0 20px;
+            font-size: 1.4rem;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .news-meta-info {
+            padding: 0 20px 10px;
+            font-size: 0.9rem;
+            color: var(--gray-color);
+            display: flex;
+            gap: 15px;
+        }
+
+        .news-media {
+            width: 100%;
+            max-height: 400px;
+            background-color: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .news-media img, .news-media video {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .news-body {
+            padding: 15px 20px;
+            line-height: 1.6;
+            color: #3c4043;
+            white-space: pre-line;
+        }
+
+        .news-hashtags {
+            padding: 0 20px 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .hashtag {
+            background-color: #f1f3f4;
+            color: var(--gray-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Menú Derecho (Últimas Noticias) */
+        .right-sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .right-sidebar h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--gray-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .latest-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f3f4;
+            cursor: pointer;
+        }
+
+        .latest-item:last-child {
+            border-bottom: none;
+        }
+
+        .latest-item h4 {
+            font-size: 0.95rem;
+            color: var(--dark-color);
+            margin-bottom: 4px;
+            transition: color 0.2s;
+        }
+
+        .latest-item h4:hover {
+            color: var(--primary-color);
+        }
+
+        .latest-item span {
+            font-size: 0.75rem;
+            color: var(--gray-color);
+        }
+
+        /* Panel de Administración (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
         }
 
-        .chat-container {
-            background-color: var(--surface-color);
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            height: 410px;
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 90vh;
             display: flex;
             flex-direction: column;
         }
 
-        .chat-container h2 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        /* DISEÑO DE CONTADORES */
-        .stats-banner {
-            background: var(--surface-accent);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
+        .modal-header {
+            background: var(--dark-color);
+            color: white;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
-            border: 1px solid var(--border-color);
+            align-items: center;
         }
 
-        .chat-messages {
-            flex-grow: 1;
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
             overflow-y: auto;
-            background-color: var(--bg-color);
-            border-radius: 8px;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 12px;
-        }
-
-        .chat-message {
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            word-break: break-word;
-        }
-
-        .chat-message .username {
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-right: 5px;
-        }
-
-        /* ACCESO CHAT LOCAL */
-        .chat-auth-box {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 320px;
-            margin: auto;
-            text-align: center;
-        }
-
-        .chat-auth-box input {
-            background-color: var(--surface-accent);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 12px;
-            color: var(--text-color);
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        .chat-auth-box .row-btns {
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-auth-box button {
             flex: 1;
         }
 
-        .chat-input-area {
-            display: flex;
-            gap: 10px;
+        /* Formularios de Admin */
+        .form-group {
+            margin-bottom: 15px;
         }
 
-        .chat-input-area input {
-            flex-grow: 1;
-            background-color: var(--surface-accent);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px 12px;
-            color: var(--text-color);
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
             font-size: 0.9rem;
-            outline: none;
         }
 
-        .chat-input-area input:focus {
-            border-color: var(--primary-color);
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
         }
 
-        .btn {
+        .form-group textarea {
+            resize: vertical;
+            height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-primary {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 10px 15px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background 0.2s;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
 
-        .btn:hover { background-color: #e02454; }
-        .btn-secondary { background-color: #4a5568; }
-        .btn-secondary:hover { background-color: #2d3748; }
+        .btn-primary:hover {
+            background-color: #1557b0;
+        }
 
-        .hidden { display: none !important; }
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
 
-        @media (max-width: 900px) {
-            .main-layout, .sidebar, .center-content { display: block; width: 100%; }
-            .sidebar { margin-bottom: 15px; }
+        .btn-warning {
+            background-color: #f9ab00;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Tabla de administración de noticias existentes */
+        .admin-news-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .admin-news-table th, .admin-news-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .admin-news-table th {
+            background-color: var(--light-color);
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .login-box {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* Pie de página */
+        footer {
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            padding: 15px;
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            margin-top: auto;
         }
     </style>
 </head>
 <body>
 
+    <!-- PORTADA / CABECERA -->
     <header>
-        <h1>Transmisión en Vivo Oficial</h1>
+        <h1><i class="fa-solid fa-globe"></i>INFOSUCHI</h1>
+        <button class="admin-btn" onclick="abrirPanelAdmin()"><i class="fa-solid fa-lock"></i> Panel Administrador</button>
     </header>
 
-    <div class="main-layout">
-        <aside class="sidebar">
-            <h2>Noticias</h2>
-            <div class="sidebar-content" id="news-left-container">Cargando contenido lateral...</div>
+    <!-- CONTENEDOR PRINCIPAL DE TRES COLUMNAS -->
+    <div class="main-container">
+        
+        <!-- COLUMNA IZQUIERDA: MENÚ DE SECCIONES -->
+        <aside class="left-sidebar">
+            <h3>Secciones</h3>
+            <ul class="category-list" id="categoryList">
+                <li class="active" onclick="filtrarCategoria('Todas', this)"><i class="fa-solid fa-border-all"></i> Todas</li>
+                <li onclick="filtrarCategoria('Nacional', this)"><i class="fa-solid fa-flag"></i> Nacional</li>
+                <li onclick="filtrarCategoria('Internacional', this)"><i class="fa-solid fa-earth-americas"></i> Internacional</li>
+                <li onclick="filtrarCategoria('Tecnología', this)"><i class="fa-solid fa-laptop-code"></i> Tecnología</li>
+                <li onclick="filtrarCategoria('Deportes', this)"><i class="fa-solid fa-futbol"></i> Deportes</li>
+                <li onclick="filtrarCategoria('Cultura', this)"><i class="fa-solid fa-palette"></i> Cultura</li>
+            </ul>
         </aside>
 
-        <div class="center-content">
-            <div class="video-container">
-                <iframe id="stream-player" src="" allow="autoplay; encrypted-media;" allowfullscreen></iframe>
+        <!-- COLUMNA CENTRAL: BLOG DE NOTICIAS -->
+        <main class="feed-container" id="newsFeed">
+            <!-- Las noticias se cargarán dinámicamente aquí -->
+        </main>
+
+        <!-- COLUMNA DERECHA: RESUMEN DE ÚLTIMAS NOTICIAS -->
+        <aside class="right-sidebar">
+            <h3>Últimas Noticias</h3>
+            <div id="latestNewsList">
+                <!-- Resumen rápido cargado dinámicamente -->
             </div>
-
-            <div class="chat-container">
-                <h2>Chat en Vivo</h2>
-                
-                <div class="stats-banner">
-                    <div>🟢 En línea: <strong id="count-online" style="color: #2ecc71;">0</strong></div>
-                    <div>📊 Visitas totales: <strong id="count-total" style="color: #3498db;">0</strong></div>
-                </div>
-                
-                <div id="chat-auth" class="chat-auth-box">
-                    <p>Inicia sesión con tu apodo para chatear</p>
-                    <input type="text" id="auth-username" placeholder="Nombre de usuario">
-                    <input type="password" id="auth-password" placeholder="Contraseña (mín. 6 letras)">
-                    
-                    <div class="row-btns">
-                        <button class="btn" id="btn-login">Ingresar</button>
-                        <button class="btn btn-secondary" id="btn-register">Registrarse</button>
-                    </div>
-                </div>
-
-                <div id="chat-active" class="hidden" style="display: flex; flex-direction: column; flex-grow: 1;">
-                    <div class="chat-messages" id="chat-messages-box"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="chat-input-field" placeholder="Escribe un mensaje aquí...">
-                        <button class="btn" id="btn-send-message">Enviar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <aside class="sidebar">
-            <h2>Destacados</h2>
-            <div class="sidebar-content" id="news-right-container">Cargando contenido lateral...</div>
         </aside>
+
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, push, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <!-- PIE DE PÁGINA -->
+    <footer>
+        <p>&copy; 2026 Infosuchi Portal de Noticias. Todos los derechos reservados.</p>
+    </footer>
 
-        // =========================================================================
-        // ⚠️ PEGA AQUÍ LAS CREDENCIALES DE TU PROYECTO DE FIREBASE
-        // =========================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyB0JWN4bRHZ8f2tZEQwnxBW8hGmP9XPaEA",
-            authDomain: "calcos-6760b.firebaseapp.com",
-            databaseURL: "https://calcos-6760b-default-rtdb.firebaseio.com",
-            projectId: "calcos-6760b",
-            storageBucket: "calcos-6760b.firebasestorage.app",
-            messagingSenderId: "20210064860",
-            appId: "1:20210064860:web:01db78b92e3b0d43400319"
-        };
+    <!-- MODAL DE AUTENTICACIÓN Y PANEL DE ADMINISTRACIÓN -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Panel de Administración</h3>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Contenido dinámico (Login o Panel de Gestión) -->
+            </div>
+        </div>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+    <!-- SCRIPT DE FUNCIONALIDAD -->
+    <script>
+        // Clave única de acceso para administrador
+        const ADMIN_PIN = "1234"; // Puedes cambiar este PIN de seguridad aquí
 
-        // ELEMENTOS DOM
-        const streamPlayer = document.getElementById('stream-player');
-        const newsLeftContainer = document.getElementById('news-left-container');
-        const newsRightContainer = document.getElementById('news-right-container');
-        
-        const chatAuth = document.getElementById('chat-auth');
-        const chatActive = document.getElementById('chat-active');
-        const authUsername = document.getElementById('auth-username');
-        const authPassword = document.getElementById('auth-password');
-        const btnLogin = document.getElementById('btn-login');
-        const btnRegister = document.getElementById('btn-register');
+        // Almacenamiento
 
-        const chatMessagesBox = document.getElementById('chat-messages-box');
-        const chatInputField = document.getElementById('chat-input-field');
-        const btnSendMessage = document.getElementById('btn-send-message');
-        
-        const txtOnline = document.getElementById('count-online');
-        const txtTotal = document.getElementById('count-total');
-
-        let usuarioActual = null;
-
-        // 1. SINCRONIZACIÓN EN TIEMPO REAL DEL REPRODUCTOR Y CONTENIDOS HTML
-        onValue(ref(db, 'live_config'), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                if (data.streamUrl) streamPlayer.src = data.streamUrl;
-                newsLeftContainer.innerHTML = data.newsLeft || "No hay contenidos.";
-                newsRightContainer.innerHTML = data.newsRight || "No hay contenidos.";
-            }
-        });
-
-      // =========================================================================
-// 2. SISTEMA DE CONTADORES EN TIEMPO REAL (PRESENCIA)
-        const onlineRef = ref(db, 'usuarios_online');
-        const totalRef = ref(db, 'visitas_totales');
-        const connectedRef = ref(db, '.info/connected');
-
-        onValue(connectedRef, (snap) => {
-            if (snap.val() === true) {
-                // Sumar usuario en línea activo
-                runTransaction(onlineRef, (val) => (val || 0) + 1);
-                // Sumar al histórico global acumulado
-                runTransaction(totalRef, (val) => (val || 0) + 1);
-                // Programar resta automática al salir de la web
-                onDisconnect(onlineRef).runTransaction((val) => (val ? val - 1 : 0));
-            }
-        });
-
-        onValue(onlineRef, (snap) => { txtOnline.textContent = snap.val() || 0; });
-        onValue(totalRef, (snap) => { txtTotal.textContent = snap.val() || 0; });
-
-        // 3. CONTROL DE ESTADO DEL CHAT
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                usuarioActual = user.displayName || localStorage.getItem('chat_alias') || "Usuario";
-                chatAuth.classList.add('hidden');
-                chatActive.classList.remove('hidden');
-            } else {
-                usuarioActual = null;
-                chatAuth.classList.remove('hidden');
-                chatActive.classList.add('hidden');
-            }
-        });
-
-        // 4. REGISTRO LOCAL SIMULADO
-        btnRegister.addEventListener('click', () => {
-            const username = authUsername.value.trim().toLowerCase();
-            const password = authPassword.value;
-            const originalAlias = authUsername.value.trim();
-
-            if (username.length < 3 || password.length < 6) {
-                alert("El usuario requiere mín. 3 letras y la clave mín. 6 caracteres.");
-                return;
-            }
-
-            const emailSimulado = `${username}@chatlocal.com`;
-
-            createUserWithEmailAndPassword(auth, emailSimulado, password)
-                .then(() => {
-                    localStorage.setItem('chat_alias', originalAlias);
-                    usuarioActual = originalAlias;
-                    alert("¡Cuenta creada! Ya puedes participar en el chat.");
-                })
-                .catch((error) => {
-                    if (error.code === 'auth/email-already-in-use') {
-                        alert("Este nombre de usuario ya está ocupado.");
-                    } else {
-                        alert("Error: " + error.message);
-                    }
-                });
-        });
-
-        // 5. LOGIN LOCAL SIMULADO
-        btnLogin.addEventListener('click', () => {
-            const username = authUsername.value.trim().toLowerCase();
-            const password = authPassword.value;
-            const originalAlias = authUsername.value.trim();
-
-            if (!username || !password) {
-                alert("Rellena todos los campos.");
-                return;
-            }
-
-            const emailSimulado = `${username}@chatlocal.com`;
-
-            signInWithEmailAndPassword(auth, emailSimulado, password)
-                .then(() => {
-                    localStorage.setItem('chat_alias', originalAlias);
-                    usuarioActual = originalAlias;
-                })
-                .catch(() => {
-                    alert("Usuario o contraseña incorrectos.");
-                });
-        });
-
-        // 6. ENVÍO Y RENDERIZADO DE CHAT
-        function enviarMensaje() {
-            const texto = chatInputField.value.trim();
-            if (!texto || !usuarioActual) return;
-
-            push(ref(db, 'live_chat'), {
-                username: usuarioActual,
-                message: texto,
-                timestamp: Date.now()
-            });
-            chatInputField.value = '';
-        }
-
-        btnSendMessage.addEventListener('click', enviarMensaje);
-        chatInputField.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensaje(); });
-
-        onValue(ref(db, 'live_chat'), (snapshot) => {
-            chatMessagesBox.innerHTML = '';
-            snapshot.forEach((childSnapshot) => {
-                const msgData = childSnapshot.val();
-                const messageEl = document.createElement('div');
-                messageEl.className = 'chat-message';
-                
-                const usernameEl = document.createElement('span');
-                usernameEl.className = 'username';
-                usernameEl.textContent = msgData.username + ":";
-
-                const textEl = document.createTextNode(" " + msgData.message);
-                messageEl.appendChild(usernameEl);
-                messageEl.appendChild(textEl);
-                chatMessagesBox.appendChild(messageEl);
-            });
-            chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-        });
-    </script>
-</body>
-</html>
