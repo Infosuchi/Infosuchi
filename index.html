@@ -8,6 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- SDK de Firebase (Compat v10) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
     <style>
         :root {
             --primary-color: #1a73e8;
@@ -35,7 +40,6 @@
             min-height: 100vh;
         }
 
-        /* Cabecera / Portada */
         header {
             background: linear-gradient(135deg, #1a73e8, #0d47a1);
             color: white;
@@ -71,7 +75,6 @@
             background-color: rgba(255, 255, 255, 0.3);
         }
 
-        /* Estructura Principal de 3 Columnas */
         .main-container {
             display: grid;
             grid-template-columns: 260px 1fr 300px;
@@ -92,7 +95,6 @@
             }
         }
 
-        /* Menú Izquierdo (Secciones) */
         .left-sidebar {
             background: white;
             border-radius: 8px;
@@ -131,7 +133,6 @@
             color: var(--primary-color);
         }
 
-        /* Centro (Blog de Noticias) */
         .feed-container {
             display: flex;
             flex-direction: column;
@@ -144,11 +145,6 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
-            transition: transform 0.2s;
-        }
-
-        .news-card:hover {
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
         .news-header-info {
@@ -187,15 +183,12 @@
             padding: 0 20px 10px;
             font-size: 0.9rem;
             color: var(--gray-color);
-            display: flex;
-            gap: 15px;
         }
 
         .news-media {
             width: 100%;
             max-height: 400px;
             background-color: #000;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -231,7 +224,6 @@
             font-weight: 500;
         }
 
-        /* Menú Derecho (Últimas Noticias) */
         .right-sidebar {
             background: white;
             border-radius: 8px;
@@ -253,7 +245,6 @@
         .latest-item {
             padding: 10px 0;
             border-bottom: 1px solid #f1f3f4;
-            cursor: pointer;
         }
 
         .latest-item:last-child {
@@ -264,11 +255,6 @@
             font-size: 0.95rem;
             color: var(--dark-color);
             margin-bottom: 4px;
-            transition: color 0.2s;
-        }
-
-        .latest-item h4:hover {
-            color: var(--primary-color);
         }
 
         .latest-item span {
@@ -276,7 +262,6 @@
             color: var(--gray-color);
         }
 
-        /* Panel de Administración (Modal) */
         .modal {
             display: none;
             position: fixed;
@@ -288,7 +273,6 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            overflow-y: auto;
             padding: 20px;
         }
 
@@ -327,7 +311,6 @@
             flex: 1;
         }
 
-        /* Formularios de Admin */
         .form-group {
             margin-bottom: 15px;
         }
@@ -366,11 +349,6 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary:hover {
-            background-color: #1557b0;
         }
 
         .btn-danger {
@@ -380,7 +358,6 @@
             padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
         }
 
         .btn-warning {
@@ -390,10 +367,8 @@
             padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
         }
 
-        /* Tabla de administración de noticias existentes */
         .admin-news-table {
             width: 100%;
             border-collapse: collapse;
@@ -411,18 +386,6 @@
             background-color: var(--light-color);
         }
 
-        .actions-cell {
-            display: flex;
-            gap: 8px;
-        }
-
-        .login-box {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        /* Pie de página */
         footer {
             background-color: white;
             border-top: 1px solid var(--border-color);
@@ -436,16 +399,13 @@
 </head>
 <body>
 
-    <!-- PORTADA / CABECERA -->
     <header>
-        <h1><i class="fa-solid fa-globe"></i>INFOSUCHI</h1>
+        <h1><i class="fa-solid fa-globe"></i> Portal de Noticias</h1>
         <button class="admin-btn" onclick="abrirPanelAdmin()"><i class="fa-solid fa-lock"></i> Panel Administrador</button>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL DE TRES COLUMNAS -->
     <div class="main-container">
-        
-        <!-- COLUMNA IZQUIERDA: MENÚ DE SECCIONES -->
+        <!-- Menú Izquierdo -->
         <aside class="left-sidebar">
             <h3>Secciones</h3>
             <ul class="category-list" id="categoryList">
@@ -458,43 +418,320 @@
             </ul>
         </aside>
 
-        <!-- COLUMNA CENTRAL: BLOG DE NOTICIAS -->
+        <!-- Feed Central -->
         <main class="feed-container" id="newsFeed">
-            <!-- Las noticias se cargarán dinámicamente aquí -->
+            <!-- Cargado desde Firebase -->
         </main>
 
-        <!-- COLUMNA DERECHA: RESUMEN DE ÚLTIMAS NOTICIAS -->
+        <!-- Menú Derecho -->
         <aside class="right-sidebar">
             <h3>Últimas Noticias</h3>
-            <div id="latestNewsList">
-                <!-- Resumen rápido cargado dinámicamente -->
-            </div>
+            <div id="latestNewsList"></div>
         </aside>
-
     </div>
 
-    <!-- PIE DE PÁGINA -->
     <footer>
-        <p>&copy; 2026 Infosuchi Portal de Noticias. Todos los derechos reservados.</p>
+        <p>&copy; 2026 Portal de Noticias. Hospedado en GitHub Pages con Firebase.</p>
     </footer>
 
-    <!-- MODAL DE AUTENTICACIÓN Y PANEL DE ADMINISTRACIÓN -->
+    <!-- Modal Admin -->
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">Panel de Administración</h3>
                 <button class="close-modal" onclick="cerrarModal()">&times;</button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Contenido dinámico (Login o Panel de Gestión) -->
-            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
-    <!-- SCRIPT DE FUNCIONALIDAD -->
     <script>
-        // Clave única de acceso para administrador
-        const ADMIN_PIN = "1234"; // Puedes cambiar este PIN de seguridad aquí
+        // CONFIGURACIÓN DE FIREBASE (Reemplaza con tus datos reales)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0JWN4bRHZ8f2tZEQwnxBW8hGmP9XPaEA",
+            authDomain: "calcos-6760b.firebaseapp.com",
+            projectId: "calcos-6760b",
+            storageBucket: "calcos-6760b.firebasestorage.app",
+            messagingSenderId: "20210064860",
+            appId: "1:20210064860:web:01db78b92e3b0d43400319"
+        };
 
-        // Almacenamiento
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
 
+        let noticias = [];
+        let categoriaActual = 'Todas';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            escucharNoticiasFirestore();
+        });
+
+        // Sincronización en tiempo real con Firestore
+        function escucharNoticiasFirestore() {
+            db.collection("noticias").orderBy("fecha", "desc").onSnapshot((snapshot) => {
+                noticias = [];
+                snapshot.forEach((doc) => {
+                    noticias.push({ id: doc.id, ...doc.data() });
+                });
+                renderizarNoticias(categoriaActual);
+                renderizarUltimasNoticias();
+            });
+        }
+
+        function renderizarNoticias(cat = 'Todas') {
+            const feed = document.getElementById('newsFeed');
+            feed.innerHTML = '';
+
+            let filtradas = cat === 'Todas' ? noticias : noticias.filter(n => n.categoria === cat);
+
+            if (filtradas.length === 0) {
+                feed.innerHTML = `<div style="background:white; padding:20px; border-radius:8px; text-align:center; color:var(--gray-color);">No hay noticias publicadas en esta sección.</div>`;
+                return;
+            }
+
+            filtradas.forEach(noticia => {
+                const card = document.createElement('article');
+                card.className = 'news-card';
+                
+                const fechaFormateada = new Date(noticia.fecha).toLocaleString('es-ES', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                });
+
+                let mediaHTML = '';
+                if (noticia.urlMedia) {
+                    if (noticia.tipoMedia === 'video') {
+                        mediaHTML = `
+                            <div class="news-media">
+                                <video controls autoplay muted loop playsinline>
+                                    <source src="${noticia.urlMedia}" type="video/mp4">
+                                </video>
+                            </div>
+                        `;
+                    } else {
+                        mediaHTML = `
+                            <div class="news-media">
+                                <img src="${noticia.urlMedia}" alt="${noticia.titulo}">
+                            </div>
+                        `;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="news-header-info">
+                        <span class="news-category-badge">${noticia.categoria}</span>
+                        <span class="news-date"><i class="fa-regular fa-clock"></i> ${fechaFormateada}</span>
+                    </div>
+                    <h2>${noticia.titulo}</h2>
+                    <div class="news-meta-info">
+                        <span><i class="fa-solid fa-user-pen"></i> Por: <strong>${noticia.autor || 'Redacción'}</strong></span>
+                    </div>
+                    ${mediaHTML}
+                    <div class="news-body">${noticia.cuerpo}</div>
+                    <div class="news-hashtags">
+                        ${noticia.hashtags ? noticia.hashtags.split(' ').map(tag => `<span class="hashtag">${tag}</span>`).join('') : ''}
+                    </div>
+                `;
+                feed.appendChild(card);
+            });
+        }
+
+        function renderizarUltimasNoticias() {
+            const latestList = document.getElementById('latestNewsList');
+            latestList.innerHTML = '';
+            let recientes = [...noticias].slice(0, 5);
+
+            if (recientes.length === 0) {
+                latestList.innerHTML = `<p style="font-size:0.85rem; color:var(--gray-color);">Sin noticias recientes.</p>`;
+                return;
+            }
+
+            recientes.forEach(noticia => {
+                const item = document.createElement('div');
+                item.className = 'latest-item';
+                const fechaCorta = new Date(noticia.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+                item.innerHTML = `
+                    <h4>${noticia.titulo}</h4>
+                    <span><i class="fa-regular fa-calendar"></i> ${fechaCorta} | ${noticia.categoria}</span>
+                `;
+                latestList.appendChild(item);
+            });
+        }
+
+        function filtrarCategoria(categoria, elemento) {
+            categoriaActual = categoria;
+            document.querySelectorAll('.category-list li').forEach(li => li.classList.remove('active'));
+            elemento.classList.add('active');
+            renderizarNoticias(categoria);
+        }
+
+        // --- AUTENTICACIÓN Y GESTIÓN FIREBASE ---
+        function abrirPanelAdmin() {
+            document.getElementById('adminModal').style.display = 'flex';
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    cargarPanelGestion();
+                } else {
+                    mostrarLogin();
+                }
+            });
+        }
+
+        function cerrarModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        function mostrarLogin() {
+            document.getElementById('modalTitle').innerText = "Acceso Administrador";
+            document.getElementById('modalBody').innerHTML = `
+                <div style="max-width: 400px; margin: auto; padding: 20px;">
+                    <div class="form-group">
+                        <label>Correo Electrónico:</label>
+                        <input type="email" id="adminEmail" placeholder="admin@noticias.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="adminPass" placeholder="••••••••">
+                    </div>
+                    <button class="btn-primary" style="width: 100%;" onclick="loginFirebase()">Iniciar Sesión</button>
+                </div>
+            `;
+        }
+
+        function loginFirebase() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(error => alert("Error de acceso: " + error.message));
+        }
+
+        function cargarPanelGestion(noticiaAEditar = null) {
+            document.getElementById('modalTitle').innerText = noticiaAEditar ? "Editar Noticia" : "Panel de Gestión de Noticias";
+            const ahora = new Date().toISOString().slice(0, 16);
+
+            document.getElementById('modalBody').innerHTML = `
+                <button class="btn-primary" style="margin-bottom: 20px;" onclick="cargarPanelGestion()">+ Crear Nueva Noticia</button>
+                
+                <form id="newsForm" onsubmit="guardarNoticiaFirebase(event)" style="background: var(--light-color); padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                    <input type="hidden" id="noticiaId" value="${noticiaAEditar ? noticiaAEditar.id : ''}">
+                    
+                    <div class="form-group">
+                        <label>Título *</label>
+                        <input type="text" id="tituloInput" required value="${noticiaAEditar ? noticiaAEditar.titulo : ''}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sección *</label>
+                            <select id="categoriaInput">
+                                <option value="Nacional" ${noticiaAEditar && noticiaAEditar.categoria === 'Nacional' ? 'selected' : ''}>Nacional</option>
+                                <option value="Internacional" ${noticiaAEditar && noticiaAEditar.categoria === 'Internacional' ? 'selected' : ''}>Internacional</option>
+                                <option value="Tecnología" ${noticiaAEditar && noticiaAEditar.categoria === 'Tecnología' ? 'selected' : ''}>Tecnología</option>
+                                <option value="Deportes" ${noticiaAEditar && noticiaAEditar.categoria === 'Deportes' ? 'selected' : ''}>Deportes</option>
+                                <option value="Cultura" ${noticiaAEditar && noticiaAEditar.categoria === 'Cultura' ? 'selected' : ''}>Cultura</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha y Hora *</label>
+                            <input type="datetime-local" id="fechaInput" required value="${noticiaAEditar ? noticiaAEditar.fecha : ahora}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Autor / Colaborador</label>
+                            <input type="text" id="autorInput" value="${noticiaAEditar ? noticiaAEditar.autor : ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo Multimedia</label>
+                            <select id="tipoMediaInput">
+                                <option value="imagen" ${noticiaAEditar && noticiaAEditar.tipoMedia === 'imagen' ? 'selected' : ''}>Fotografía</option>
+                                <option value="video" ${noticiaAEditar && noticiaAEditar.tipoMedia === 'video' ? 'selected' : ''}>Video (Auto-reproducción)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL Multimedia (Imagen o Video MP4)</label>
+                        <input type="url" id="urlMediaInput" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cuerpo de la Noticia *</label>
+                        <textarea id="cuerpoInput" required>${noticiaAEditar ? noticiaAEditar.cuerpo : ''}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hashtags</label>
+                        <input type="text" id="hashtagsInput" value="${noticiaAEditar ? noticiaAEditar.hashtags : ''}">
+                    </div>
+
+                    <button type="submit" class="btn-primary">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
+                </form>
+
+                <h4>Noticias Registradas</h4>
+                <table class="admin-news-table">
+                    <thead>
+                        <tr><th>Título</th><th>Categoría</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            `;
+            renderizarTablaAdmin();
+        }
+
+        function renderizarTablaAdmin() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+            noticias.forEach(noticia => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${noticia.titulo}</strong></td>
+                    <td>${noticia.categoria}</td>
+                    <td>
+                        <button class="btn-warning" onclick="prepararEdicion('${noticia.id}')">Editar</button>
+                        <button class="btn-danger" onclick="eliminarNoticiaFirebase('${noticia.id}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function guardarNoticiaFirebase(event) {
+            event.preventDefault();
+            const id = document.getElementById('noticiaId').value;
+            const data = {
+                titulo: document.getElementById('tituloInput').value,
+                categoria: document.getElementById('categoriaInput').value,
+                fecha: document.getElementById('fechaInput').value,
+                autor: document.getElementById('autorInput').value || 'Redacción',
+                tipoMedia: document.getElementById('tipoMediaInput').value,
+                urlMedia: document.getElementById('urlMediaInput').value,
+                cuerpo: document.getElementById('cuerpoInput').value,
+                hashtags: document.getElementById('hashtagsInput').value
+            };
+
+            const promesa = id ? db.collection("noticias").doc(id).update(data) : db.collection("noticias").add(data);
+
+            promesa.then(() => {
+                alert("¡Guardado correctamente en Firebase!");
+                cargarPanelGestion();
+            }).catch(err => alert("Error: " + err.message));
+        }
+
+        function prepararEdicion(id) {
+            const noticia = noticias.find(n => n.id === id);
+            if (noticia) cargarPanelGestion(noticia);
+        }
+
+        function eliminarNoticiaFirebase(id) {
+            if (confirm("¿Seguro que deseas eliminar esta noticia de Firebase?")) {
+                db.collection("noticias").doc(id).delete()
+                    .then(() => cargarPanelGestion())
+                    .catch(err => alert("Error al eliminar: " + err.message));
+            }
+        }
+    </script>
+</body>
+</html>
