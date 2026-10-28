@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Infosuchi</title>
+    <title>Portal de Noticias</title>
     <!-- Google Fonts & FontAwesome para iconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -108,6 +108,7 @@
             background-color: rgba(255, 255, 255, 0.3);
         }
 
+        /* DISEÑO RESPONSIVO MANTENIENDO BARRAS LATERALES */
         .main-container {
             display: grid;
             grid-template-columns: 240px 1fr 280px;
@@ -254,6 +255,7 @@
             color: var(--gray-color);
         }
 
+        /* VISUALIZACIÓN DE IMAGEN COMPLETA (SIN RECORTAR) */
         .news-media {
             width: 100%;
             max-height: 450px;
@@ -551,7 +553,7 @@
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-globe"></i> Portal de Noticias Infosuchi</h1>
+        <h1><i class="fa-solid fa-globe"></i> Portal Infosuchi</h1>
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="searchInput" placeholder="Buscar noticias..." oninput="filtrarBusqueda()">
@@ -601,7 +603,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE FIREBASE (Asegúrate de configurar Storage en tu consola de Firebase)
+        // CONFIGURACIÓN DE FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyB0JWN4bRHZ8f2tZEQwnxBW8hGmP9XPaEA",
             authDomain: "calcos-6760b.firebaseapp.com",
@@ -626,13 +628,16 @@
         });
 
         function escucharDatosFirestore() {
-            db.collection("noticias").orderBy("fecha", "desc").onSnapshot((snapshot) => {
+            db.collection("noticias").onSnapshot((snapshot) => {
                 noticias = [];
                 snapshot.forEach((doc) => {
                     noticias.push({ id: doc.id, ...doc.data() });
                 });
+                noticias.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
                 aplicarFiltrosYRenderizar();
                 renderizarUltimasNoticias();
+            }, (error) => {
+                console.error("Error al leer noticias: ", error);
             });
 
             db.collection("anunciantes").onSnapshot((snapshot) => {
@@ -641,6 +646,8 @@
                     anunciantes.push({ id: doc.id, ...doc.data() });
                 });
                 aplicarFiltrosYRenderizar();
+            }, (error) => {
+                console.error("Error al leer anunciantes: ", error);
             });
         }
 
@@ -679,10 +686,10 @@
                 card.className = 'news-card';
                 card.id = `noticia-${noticia.id}`;
                 
-                const fechaFormateada = new Date(noticia.fecha).toLocaleString('es-ES', {
+                const fechaFormateada = noticia.fecha ? new Date(noticia.fecha).toLocaleString('es-ES', {
                     dateStyle: 'medium',
                     timeStyle: 'short'
-                });
+                }) : '';
 
                 let mediaHTML = '';
                 if (noticia.urlMedia) {
@@ -775,7 +782,7 @@
             recientes.forEach(noticia => {
                 const item = document.createElement('div');
                 item.className = 'latest-item';
-                const fechaCorta = new Date(noticia.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+                const fechaCorta = noticia.fecha ? new Date(noticia.fecha).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) : '';
                 
                 item.innerHTML = `
                     <h4 onclick="irANoticia('${noticia.id}', '${noticia.categoria}')">${noticia.titulo}</h4>
@@ -919,7 +926,7 @@
                     <div class="form-group">
                         <label>Subir Archivo Multimedia (Imagen o Video Directo)</label>
                         <input type="file" id="fileInput" accept="image/*,video/mp4" style="background:white; padding:5px;">
-                        <small style="color:var(--gray-color); display:block; margin-top:3px;">Si seleccionas un archivo, se subirá y alojará automáticamente en Firebase Storage.</small>
+                        <small style="color:var(--gray-color); display:block; margin-top:3px;">Si ya tenía imagen y no seleccionas otra, se mantendrá la anterior.</small>
                     </div>
 
                     <div class="form-group">
@@ -967,6 +974,7 @@
         async function guardarNoticiaFirebase(event) {
             event.preventDefault();
             const btn = document.getElementById('btnSubmitNews');
+            const textoOriginalBtn = btn.innerText;
             btn.innerText = "Subiendo archivo y guardando...";
             btn.disabled = true;
 
@@ -975,7 +983,6 @@
             const fileInput = document.getElementById('fileInput');
 
             try {
-                // Si el usuario seleccionó un archivo nuevo para subir
                 if (fileInput.files && fileInput.files[0]) {
                     const file = fileInput.files[0];
                     const storageRef = storage.ref(`noticias/${Date.now()}_${file.name}`);
@@ -1003,8 +1010,8 @@
                 alert("¡Noticia guardada y alojada correctamente!");
                 cargarPanelGestionNoticias();
             } catch (err) {
-                alert("Error al guardar: " + err.message);
-                btn.innerText = "Publicar Noticia";
+                alert("Error al subir archivo o guardar: " + err.message);
+                btn.innerText = textoOriginalBtn;
                 btn.disabled = false;
             }
         }
@@ -1022,7 +1029,7 @@
             }
         }
 
-        // --- GESTIÓN DE ANUNCIANTES (CON SUBIDA DIRECTA A STORAGE) ---
+        // --- GESTIÓN DE ANUNCIANTES ---
         function cargarPanelGestionAnunciantes(anuncianteAEditar = null) {
             document.getElementById('modalTitle').innerText = "Panel de Administración";
 
@@ -1070,7 +1077,7 @@
                     <div class="form-group">
                         <label>Subir Archivo de Anuncio (Imagen o Video)</label>
                         <input type="file" id="adFileInput" accept="image/*,video/mp4" style="background:white; padding:5px;">
-                        <small style="color:var(--gray-color); display:block; margin-top:3px;">Sube el archivo directamente a Firebase Storage.</small>
+                        <small style="color:var(--gray-color); display:block; margin-top:3px;">Si ya tenía imagen y no seleccionas otra, se mantendrá la anterior.</small>
                     </div>
 
                     <div class="form-group">
@@ -1118,6 +1125,7 @@
         async function guardarAnuncianteFirebase(event) {
             event.preventDefault();
             const btn = document.getElementById('btnSubmitAd');
+            const textoOriginalBtn = btn.innerText;
             btn.innerText = "Subiendo archivo y guardando...";
             btn.disabled = true;
 
@@ -1151,8 +1159,8 @@
                 alert("¡Anunciante guardado y alojado correctamente!");
                 cargarPanelGestionAnunciantes();
             } catch (err) {
-                alert("Error al guardar: " + err.message);
-                btn.innerText = "Guardar Anunciante";
+                alert("Error al subir archivo o guardar: " + err.message);
+                btn.innerText = textoOriginalBtn;
                 btn.disabled = false;
             }
         }
