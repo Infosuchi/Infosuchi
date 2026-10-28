@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Noticias</title>
+    <title>Portal Infosuchi</title>
     <!-- Google Fonts & FontAwesome para iconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- SDK de Firebase (Compat v10) -->
+    <!-- SDK de Firebase (Compat v10) con Storage incluido -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <style>
         :root {
@@ -107,7 +108,6 @@
             background-color: rgba(255, 255, 255, 0.3);
         }
 
-        /* ESTRUCTURA GENERAL Y RESPONSIVA MEJORADA */
         .main-container {
             display: grid;
             grid-template-columns: 240px 1fr 280px;
@@ -125,7 +125,6 @@
             }
         }
 
-        /* En Celulares: Menú superior colapsable horizontal o barra lateral compacta sin mandarlo al fondo */
         @media (max-width: 850px) {
             .main-container {
                 grid-template-columns: 1fr;
@@ -255,7 +254,6 @@
             color: var(--gray-color);
         }
 
-        /* IMAGEN COMPLETA */
         .news-media {
             width: 100%;
             max-height: 450px;
@@ -301,7 +299,6 @@
             font-weight: 500;
         }
 
-        /* ANUNCIANTES */
         .ad-banner-card {
             background: white;
             border-radius: 8px;
@@ -356,7 +353,6 @@
             text-transform: uppercase;
         }
 
-        /* ULTIMAS NOTICIAS (ENLACES CLICKEABLES) */
         .latest-item {
             padding: 8px 0;
             border-bottom: 1px solid #f1f3f4;
@@ -555,7 +551,7 @@
 <body>
 
     <header>
-        <h1><i class="fa-solid fa-globe"></i> Portal de Noticias</h1>
+        <h1><i class="fa-solid fa-globe"></i> Portal de Noticias Infosuchi</h1>
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="searchInput" placeholder="Buscar noticias..." oninput="filtrarBusqueda()">
@@ -590,7 +586,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 Portal de Noticias. Hospedado en GitHub Pages con Firebase.</p>
+        <p>&copy; 2026 Portal de Noticias Infosuchi. Todos los derechos reservados.</p>
     </footer>
 
     <!-- Modal Admin -->
@@ -605,7 +601,7 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN DE FIREBASE (Reemplaza con tus datos reales)
+        // CONFIGURACIÓN DE FIREBASE (Asegúrate de configurar Storage en tu consola de Firebase)
         const firebaseConfig = {
             apiKey: "AIzaSyB0JWN4bRHZ8f2tZEQwnxBW8hGmP9XPaEA",
             authDomain: "calcos-6760b.firebaseapp.com",
@@ -618,6 +614,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        const storage = firebase.storage();
 
         let noticias = [];
         let anunciantes = [];
@@ -765,7 +762,6 @@
             }
         }
 
-        // ÚNICAMENTE LAS ÚLTIMAS 5 NOTICIAS CON ENLACE CLICKEABLE
         function renderizarUltimasNoticias() {
             const latestList = document.getElementById('latestNewsList');
             latestList.innerHTML = '';
@@ -789,7 +785,6 @@
             });
         }
 
-        // Función para cambiar de categoría automáticamente si la noticia no está en la vista actual y hacer scroll
         function irANoticia(idNoticia, categoriaNoticia) {
             if (categoriaActual !== 'Todas' && categoriaActual !== categoriaNoticia) {
                 const liTodas = document.querySelector('.category-list li');
@@ -883,6 +878,7 @@
                 
                 <form id="newsForm" onsubmit="guardarNoticiaFirebase(event)" style="background: var(--light-color); padding: 12px; border-radius: 6px; margin-bottom: 20px;">
                     <input type="hidden" id="noticiaId" value="${noticiaAEditar ? noticiaAEditar.id : ''}">
+                    <input type="hidden" id="urlMediaInput" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
                     
                     <div class="form-group">
                         <label>Título *</label>
@@ -921,8 +917,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>URL Multimedia (Imagen o Video MP4)</label>
-                        <input type="url" id="urlMediaInput" value="${noticiaAEditar ? noticiaAEditar.urlMedia : ''}">
+                        <label>Subir Archivo Multimedia (Imagen o Video Directo)</label>
+                        <input type="file" id="fileInput" accept="image/*,video/mp4" style="background:white; padding:5px;">
+                        <small style="color:var(--gray-color); display:block; margin-top:3px;">Si seleccionas un archivo, se subirá y alojará automáticamente en Firebase Storage.</small>
                     </div>
 
                     <div class="form-group">
@@ -935,7 +932,7 @@
                         <input type="text" id="hashtagsInput" value="${noticiaAEditar ? noticiaAEditar.hashtags : ''}">
                     </div>
 
-                    <button type="submit" class="btn-primary">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
+                    <button type="submit" id="btnSubmitNews" class="btn-primary">${noticiaAEditar ? 'Actualizar Noticia' : 'Publicar Noticia'}</button>
                 </form>
 
                 <h4>Noticias Registradas</h4>
@@ -967,26 +964,49 @@
             });
         }
 
-        function guardarNoticiaFirebase(event) {
+        async function guardarNoticiaFirebase(event) {
             event.preventDefault();
+            const btn = document.getElementById('btnSubmitNews');
+            btn.innerText = "Subiendo archivo y guardando...";
+            btn.disabled = true;
+
             const id = document.getElementById('noticiaId').value;
-            const data = {
-                titulo: document.getElementById('tituloInput').value,
-                categoria: document.getElementById('categoriaInput').value,
-                fecha: document.getElementById('fechaInput').value,
-                autor: document.getElementById('autorInput').value || 'Redacción',
-                tipoMedia: document.getElementById('tipoMediaInput').value,
-                urlMedia: document.getElementById('urlMediaInput').value,
-                cuerpo: document.getElementById('cuerpoInput').value,
-                hashtags: document.getElementById('hashtagsInput').value
-            };
+            let urlMedia = document.getElementById('urlMediaInput').value;
+            const fileInput = document.getElementById('fileInput');
 
-            const promesa = id ? db.collection("noticias").doc(id).update(data) : db.collection("noticias").add(data);
+            try {
+                // Si el usuario seleccionó un archivo nuevo para subir
+                if (fileInput.files && fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    const storageRef = storage.ref(`noticias/${Date.now()}_${file.name}`);
+                    const snapshot = await storageRef.put(file);
+                    urlMedia = await snapshot.ref.getDownloadURL();
+                }
 
-            promesa.then(() => {
-                alert("¡Noticia guardada correctamente!");
+                const data = {
+                    titulo: document.getElementById('tituloInput').value,
+                    categoria: document.getElementById('categoriaInput').value,
+                    fecha: document.getElementById('fechaInput').value,
+                    autor: document.getElementById('autorInput').value || 'Redacción',
+                    tipoMedia: document.getElementById('tipoMediaInput').value,
+                    urlMedia: urlMedia,
+                    cuerpo: document.getElementById('cuerpoInput').value,
+                    hashtags: document.getElementById('hashtagsInput').value
+                };
+
+                if (id) {
+                    await db.collection("noticias").doc(id).update(data);
+                } else {
+                    await db.collection("noticias").add(data);
+                }
+
+                alert("¡Noticia guardada y alojada correctamente!");
                 cargarPanelGestionNoticias();
-            }).catch(err => alert("Error: " + err.message));
+            } catch (err) {
+                alert("Error al guardar: " + err.message);
+                btn.innerText = "Publicar Noticia";
+                btn.disabled = false;
+            }
         }
 
         function prepararEdicionNoticia(id) {
@@ -1002,7 +1022,7 @@
             }
         }
 
-        // --- GESTIÓN DE ANUNCIANTES (CON OPCIÓN DE FOTO O VIDEO) ---
+        // --- GESTIÓN DE ANUNCIANTES (CON SUBIDA DIRECTA A STORAGE) ---
         function cargarPanelGestionAnunciantes(anuncianteAEditar = null) {
             document.getElementById('modalTitle').innerText = "Panel de Administración";
 
@@ -1019,6 +1039,7 @@
                 
                 <form id="adForm" onsubmit="guardarAnuncianteFirebase(event)" style="background: var(--light-color); padding: 12px; border-radius: 6px; margin-bottom: 20px;">
                     <input type="hidden" id="anuncianteId" value="${anuncianteAEditar ? anuncianteAEditar.id : ''}">
+                    <input type="hidden" id="adImagenInput" value="${anuncianteAEditar ? anuncianteAEditar.imagen : ''}">
                     
                     <div class="form-group">
                         <label>Nombre del Anunciante / Título *</label>
@@ -1047,8 +1068,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>URL Multimedia del Anuncio (Imagen o Video MP4) *</label>
-                        <input type="url" id="adImagenInput" required value="${anuncianteAEditar ? anuncianteAEditar.imagen : ''}" placeholder="https://...">
+                        <label>Subir Archivo de Anuncio (Imagen o Video)</label>
+                        <input type="file" id="adFileInput" accept="image/*,video/mp4" style="background:white; padding:5px;">
+                        <small style="color:var(--gray-color); display:block; margin-top:3px;">Sube el archivo directamente a Firebase Storage.</small>
                     </div>
 
                     <div class="form-group">
@@ -1061,7 +1083,7 @@
                         <input type="url" id="adEnlaceInput" value="${anuncianteAEditar ? anuncianteAEditar.enlace : ''}" placeholder="https://whatsapp.com/...">
                     </div>
 
-                    <button type="submit" class="btn-primary">${anuncianteAEditar ? 'Actualizar Anunciante' : 'Guardar Anunciante'}</button>
+                    <button type="submit" id="btnSubmitAd" class="btn-primary">${anuncianteAEditar ? 'Actualizar Anunciante' : 'Guardar Anunciante'}</button>
                 </form>
 
                 <h4>Anunciantes Registrados</h4>
@@ -1093,24 +1115,46 @@
             });
         }
 
-        function guardarAnuncianteFirebase(event) {
+        async function guardarAnuncianteFirebase(event) {
             event.preventDefault();
+            const btn = document.getElementById('btnSubmitAd');
+            btn.innerText = "Subiendo archivo y guardando...";
+            btn.disabled = true;
+
             const id = document.getElementById('anuncianteId').value;
-            const data = {
-                titulo: document.getElementById('adTituloInput').value,
-                seccion: document.getElementById('adSeccionInput').value,
-                tipoMedia: document.getElementById('adTipoMediaInput').value,
-                imagen: document.getElementById('adImagenInput').value,
-                texto: document.getElementById('adTextoInput').value,
-                enlace: document.getElementById('adEnlaceInput').value
-            };
+            let imagenUrl = document.getElementById('adImagenInput').value;
+            const fileInput = document.getElementById('adFileInput');
 
-            const promesa = id ? db.collection("anunciantes").doc(id).update(data) : db.collection("anunciantes").add(data);
+            try {
+                if (fileInput.files && fileInput.files[0]) {
+                    const file = fileInput.files[0];
+                    const storageRef = storage.ref(`anunciantes/${Date.now()}_${file.name}`);
+                    const snapshot = await storageRef.put(file);
+                    imagenUrl = await snapshot.ref.getDownloadURL();
+                }
 
-            promesa.then(() => {
-                alert("¡Anunciante guardado correctamente!");
+                const data = {
+                    titulo: document.getElementById('adTituloInput').value,
+                    seccion: document.getElementById('adSeccionInput').value,
+                    tipoMedia: document.getElementById('adTipoMediaInput').value,
+                    imagen: imagenUrl,
+                    texto: document.getElementById('adTextoInput').value,
+                    enlace: document.getElementById('adEnlaceInput').value
+                };
+
+                if (id) {
+                    await db.collection("anunciantes").doc(id).update(data);
+                } else {
+                    await db.collection("anunciantes").add(data);
+                }
+
+                alert("¡Anunciante guardado y alojado correctamente!");
                 cargarPanelGestionAnunciantes();
-            }).catch(err => alert("Error: " + err.message));
+            } catch (err) {
+                alert("Error al guardar: " + err.message);
+                btn.innerText = "Guardar Anunciante";
+                btn.disabled = false;
+            }
         }
 
         function prepararEdicionAnunciante(id) {
