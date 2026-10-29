@@ -1,11 +1,11 @@
 // CONFIGURACIÓN DE FIREBASE (Sustituye con tus credenciales de consola de Firebase)
 const firebaseConfig = {
-    apiKey: "AIzaSyDEz25JAvRDpB6YXBGs20BYSaqoLFgQglk",
-    authDomain: "infosuchi-21d3f.firebaseapp.com",
-    projectId: "infosuchi-21d3f",
-    storageBucket: "infosuchi-21d3f.firebasestorage.app",
-    messagingSenderId: "1060798369576",
-    appId: "1:1060798369576:web:902ef3754b4b8851ab8a1d"
+    apiKey: "AIzaSyB0JWN4bRHZ8f2tZEQwnxBW8hGmP9XPaEA",
+    authDomain: "calcos-6760b.firebaseapp.com",
+    projectId: "calcos-6760b",
+    storageBucket: "calcos-6760b.firebasestorage.app",
+    messagingSenderId: "20210064860",
+    appId: "1:20210064860:web:01db78b92e3b0d43400319"
 };
 
 // Inicializar SDKs de Firebase v10 (Modular via CDN)
