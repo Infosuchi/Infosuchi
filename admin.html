@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Noticias</title>
+    <title>Panel de Administración</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background: #eef2f3; color: #333; }
         .login-wrapper { display: flex; height: 100vh; justify-content: center; align-items: center; }
-        .login-box, .admin-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .login-box, .admin-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         .admin-container { max-width: 1000px; margin: 30px auto; display: none; }
         input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
         button { background: #1d3557; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
         button:hover { background: #457b9d; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; }
         .tabs button { width: auto; background: #adb5bd; }
         .tabs button.active { background: #e63946; }
         .section-panel { display: none; }
@@ -24,6 +24,7 @@
         .action-btns { display: flex; gap: 5px; }
         .action-btns button { padding: 5px 10px; font-size: 0.8rem; width: auto; }
         .btn-danger { background: #e63946; }
+        .loader-status { font-size: 0.85rem; color: #e63946; font-weight: bold; margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -35,23 +36,23 @@
             <form id="login-form">
                 <input type="email" id="admin-email" placeholder="Correo electrónico" required>
                 <input type="password" id="admin-password" placeholder="Contraseña" required>
-                <button type="submit">Ingresar al Panel</button>
+                <button type="submit">Ingresar</button>
             </form>
             <p id="login-error" style="color:red; font-size:0.85rem; margin-top:10px;"></p>
         </div>
     </div>
 
-    <!-- PANEL DE ADMINISTRACIÓN GENERAL -->
+    <!-- PANEL DE ADMINISTRACIÓN -->
     <div id="admin-dashboard" class="admin-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Panel de Control General</h2>
+            <h2>Panel de Control</h2>
             <button id="logout-btn" style="width: auto; background: #e63946;">Cerrar Sesión</button>
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('noticias')">Gestionar Noticias</button>
-            <button class="tab-btn" onclick="switchTab('pagina')">Configurar Página</button>
-            <button class="tab-btn" onclick="switchTab('anunciantes')">Administrar Anunciantes</button>
+            <button class="tab-btn active" onclick="switchTab('noticias')">Noticias</button>
+            <button class="tab-btn" onclick="switchTab('pagina')">Administrar Página</button>
+            <button class="tab-btn" onclick="switchTab('anunciantes')">Anunciantes</button>
         </div>
 
         <!-- SECCIÓN 1: NOTICIAS -->
@@ -65,30 +66,25 @@
                     <input type="date" id="news-fecha" required>
                     <input type="time" id="news-hora" required>
                 </div>
-                <input type="text" id="news-categoria" placeholder="Categoría (ej. Deportes, Nacionales, Seguridad)" required>
-                <input type="text" id="news-hashtags" placeholder="Hashtags separados por coma (ej. suchitepequez, mazatenango)">
+                <input type="text" id="news-categoria" placeholder="Categoría" required>
+                <input type="text" id="news-hashtags" placeholder="Hashtags (ej. local, politica)">
                 
-                <label>Multimedia (Imagen o Video):</label>
-                <input type="text" id="news-media-url" placeholder="Opción 1: Pegar enlace web directo (URL)">
-                <label style="font-size: 0.85rem; color: #666;">Opción 2: Subir archivo directamente desde tu dispositivo al Servidor (Firebase Storage):</label>
+                <label>Multimedia de la Noticia:</label>
+                <input type="text" id="news-media-url" placeholder="Opción A: Pegar URL directa de imagen o video">
+                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir archivo desde tu dispositivo:</label>
                 <input type="file" id="news-file-input" accept="image/*,video/*">
 
                 <textarea id="news-cuerpo" rows="6" placeholder="Cuerpo de la noticia..." required></textarea>
-                <input type="text" id="news-anunciante" placeholder="HTML o texto del Patrocinador / Anunciante para el pie de esta noticia">
+                <p id="news-loader" class="loader-status"></p>
                 
-                <button type="submit" style="background: #2a9d8f;">Guardar Publicación</button>
+                <button type="submit" style="background: #2a9d8f;">Guardar Noticia</button>
                 <button type="button" id="cancel-edit" style="background: #6c757d; display:none;" onclick="resetNewsForm()">Cancelar Edición</button>
             </form>
 
-            <h3 style="margin-top: 30px;">Listado de Noticias Existentes</h3>
+            <h3 style="margin-top: 30px;">Noticias Registradas</h3>
             <table>
                 <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Categoría</th>
-                        <th>Fecha</th>
-                        <th>Acciones</th>
-                    </tr>
+                    <tr><th>Título</th><th>Categoría</th><th>Fecha</th><th>Acciones</th></tr>
                 </thead>
                 <tbody id="admin-news-table">
                     <tr><td colspan="4">Cargando...</td></tr>
@@ -96,35 +92,72 @@
             </table>
         </div>
 
-        <!-- SECCIÓN 2: CONFIGURAR PÁGINA -->
+        <!-- SECCIÓN 2: ADMINISTRAR PÁGINA (CABECERA Y FONDO) -->
         <div id="tab-pagina" class="section-panel">
-            <h3>Configuración de la Página Principal y Cabecera</h3>
+            <h3>Cabecera y Fondo del Sitio</h3>
             <form id="config-form">
-                <input type="text" id="cfg-titulo" placeholder="Título principal del sitio (Ej. INFOSUCHI Noticias)" required>
-                <input type="text" id="cfg-subtitulo" placeholder="Subtexto o lema de la cabecera" required>
-                <button type="submit">Actualizar Cabecera</button>
+                <input type="text" id="cfg-titulo" placeholder="Título Principal" required>
+                <input type="text" id="cfg-subtitulo" placeholder="Subtítulo / Lema" required>
+                
+                <label>Imagen de Fondo de la Cabecera:</label>
+                <input type="text" id="cfg-bg-url" placeholder="Opción A: Pegar URL de la imagen de fondo">
+                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir imagen de fondo desde el dispositivo:</label>
+                <input type="file" id="cfg-bg-file" accept="image/*">
+                <p id="cfg-loader" class="loader-status"></p>
+
+                <button type="submit">Actualizar Cabecera y Fondo</button>
             </form>
         </div>
 
         <!-- SECCIÓN 3: ANUNCIANTES -->
         <div id="tab-anunciantes" class="section-panel">
-            <h3>Gestión Global de Anunciantes y Patrocinadores</h3>
+            <h3>Gestión de Anunciantes y Patrocinadores</h3>
             <form id="sponsor-form">
-                <textarea id="sponsor-global-html" rows="4" placeholder="Código HTML o texto publicitario global para banners laterales o inferiores..."></textarea>
-                <button type="submit">Guardar Anunciante Global</button>
+                <input type="text" id="ad-titulo" placeholder="Nombre o referencia del anunciante" required>
+                
+                <label>Ubicación del Banner:</label>
+                <select id="ad-ubicacion" required>
+                    <option value="Cabecera">Cabecera (Superior)</option>
+                    <option value="Pie de pagina">Pie de página (Inferior)</option>
+                    <option value="Columna Izquierda">Columna Izquierda</option>
+                    <option value="Columna Derecha">Columna Derecha</option>
+                </select>
+
+                <input type="text" id="ad-link" placeholder="Enlace web de destino al hacer clic (Opcional)">
+                
+                <label>Banner Gráfico o Imagen:</label>
+                <input type="text" id="ad-media-url" placeholder="Opción A: Pegar URL de la imagen del banner">
+                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir imagen del banner desde el dispositivo:</label>
+                <input type="file" id="ad-file-input" accept="image/*">
+
+                <textarea id="ad-texto" rows="3" placeholder="Texto descriptivo o HTML opcional del anuncio..."></textarea>
+                <p id="ad-loader" class="loader-status"></p>
+
+                <button type="submit" style="background: #2a9d8f;">Publicar Anunciante</button>
             </form>
+
+            <h3 style="margin-top: 30px;">Anunciantes Activos</h3>
+            <table>
+                <thead>
+                    <tr><th>Nombre</th><th>Ubicación</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="admin-ads-table">
+                    <tr><td colspan="3">Cargando...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script type="module">
         import { auth, db, storage, signInWithEmailAndPassword, signOut, onAuthStateChanged, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, ref, uploadBytes, getDownloadURL } from './firebase-config.js';
 
-        // Control de Autenticación
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 loadAdminData();
+                loadConfigData();
+                loadAdsData();
             } else {
                 document.getElementById('login-section').style.display = 'flex';
                 document.getElementById('admin-dashboard').style.display = 'none';
@@ -138,13 +171,12 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                document.getElementById('login-error').innerText = "Credenciales incorrectas o acceso no autorizado.";
+                document.getElementById('login-error').innerText = "Credenciales incorrectas.";
             }
         });
 
         document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-        // Pestañas del Panel
         window.switchTab = function(tabName) {
             document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -152,9 +184,8 @@
             event.target.classList.add('active');
         }
 
-        // Cargar datos en el panel
+        // --- GESTIÓN DE NOTICIAS ---
         async function loadAdminData() {
-            // Cargar Noticias
             const querySnapshot = await getDocs(collection(db, "noticias"));
             const tbody = document.getElementById('admin-news-table');
             tbody.innerHTML = "";
@@ -177,34 +208,33 @@
             });
         }
 
-        // Publicar o Editar Noticia con soporte para Storage de Firebase o URL
         document.getElementById('news-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('news-id').value;
             let mediaUrl = document.getElementById('news-media-url').value;
-            const fileInput = document.getElementById('news-file-input').value;
-
-            // Si subió un archivo localmente desde el dispositivo
-            if (document.getElementById('news-file-input').files[0]) {
-                const file = document.getElementById('news-file-input').files[0];
-                const storageRef = ref(storage, `noticias_media/${Date.now()}_${file.name}`);
-                const snapshot = await uploadBytes(storageRef, file);
-                mediaUrl = await getDownloadURL(snapshot.ref);
-            }
-
-            const newsData = {
-                titulo: document.getElementById('news-titulo').value,
-                autor: document.getElementById('news-autor').value,
-                fecha: document.getElementById('news-fecha').value,
-                hora: document.getElementById('news-hora').value,
-                categoria: document.getElementById('news-categoria').value,
-                hashtags: document.getElementById('news-hashtags').value,
-                cuerpo: document.getElementById('news-cuerpo').value,
-                anuncianteHtml: document.getElementById('news-anunciante').value,
-                mediaUrl: mediaUrl || ""
-            };
+            const fileInput = document.getElementById('news-file-input').files[0];
+            const loader = document.getElementById('news-loader');
 
             try {
+                if (fileInput) {
+                    loader.innerText = "Subiendo archivo al servidor de Firebase...";
+                    const storageRef = ref(storage, `noticias_media/${Date.now()}_${fileInput.name}`);
+                    const snapshot = await uploadBytes(storageRef, fileInput);
+                    mediaUrl = await getDownloadURL(snapshot.ref);
+                }
+
+                loader.innerText = "Guardando en base de datos...";
+                const newsData = {
+                    titulo: document.getElementById('news-titulo').value,
+                    autor: document.getElementById('news-autor').value,
+                    fecha: document.getElementById('news-fecha').value,
+                    hora: document.getElementById('news-hora').value,
+                    categoria: document.getElementById('news-categoria').value,
+                    hashtags: document.getElementById('news-hashtags').value,
+                    cuerpo: document.getElementById('news-cuerpo').value,
+                    mediaUrl: mediaUrl || ""
+                };
+
                 if (id) {
                     await updateDoc(doc(db, "noticias", id), newsData);
                     alert("Noticia actualizada con éxito.");
@@ -212,11 +242,13 @@
                     await addDoc(collection(db, "noticias"), newsData);
                     alert("Noticia publicada correctamente.");
                 }
+                loader.innerText = "";
                 resetNewsForm();
                 loadAdminData();
             } catch (err) {
                 console.error(err);
-                alert("Error al guardar la noticia.");
+                loader.innerText = "";
+                alert("Error al procesar la solicitud: " + err.message);
             }
         });
 
@@ -231,7 +263,6 @@
             document.getElementById('news-hashtags').value = data.hashtags || '';
             document.getElementById('news-cuerpo').value = data.cuerpo;
             document.getElementById('news-media-url').value = data.mediaUrl || '';
-            document.getElementById('news-anunciante').value = data.anuncianteHtml || '';
             document.getElementById('cancel-edit').style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -243,30 +274,114 @@
         }
 
         window.deleteNews = async function(id) {
-            if (confirm("¿Estás seguro de eliminar esta noticia permanentemente?")) {
+            if (confirm("¿Estás seguro de eliminar esta noticia?")) {
                 await deleteDoc(doc(db, "noticias", id));
                 loadAdminData();
             }
         }
 
-        // Configuración de Cabecera
+        // --- CONFIGURACIÓN DE PÁGINA (FONDO Y CABECERA) ---
+        async function loadConfigData() {
+            const querySnap = await getDocs(collection(db, "configuracion"));
+            if (!querySnap.empty) {
+                const cfg = querySnap.docs[0].data();
+                document.getElementById('cfg-titulo').value = cfg.titulo || '';
+                document.getElementById('cfg-subtitulo').value = cfg.subtitulo || '';
+                document.getElementById('cfg-bg-url').value = cfg.bgImage || '';
+            }
+        }
+
         document.getElementById('config-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const titulo = document.getElementById('cfg-titulo').value;
             const subtitulo = document.getElementById('cfg-subtitulo').value;
+            let bgImage = document.getElementById('cfg-bg-url').value;
+            const bgFile = document.getElementById('cfg-bg-file').files[0];
+            const loader = document.getElementById('cfg-loader');
+
             try {
+                if (bgFile) {
+                    loader.innerText = "Subiendo imagen de fondo...";
+                    const storageRef = ref(storage, `site_bg/${Date.now()}_${bgFile.name}`);
+                    const snapshot = await uploadBytes(storageRef, bgFile);
+                    bgImage = await getDownloadURL(snapshot.ref);
+                }
+
+                loader.innerText = "Guardando configuración...";
                 const querySnap = await getDocs(collection(db, "configuracion"));
                 if (!querySnap.empty) {
                     const docId = querySnap.docs[0].id;
-                    await updateDoc(doc(db, "configuracion", docId), { titulo, subtitulo });
+                    await updateDoc(doc(db, "configuracion", docId), { titulo, subtitulo, bgImage });
                 } else {
-                    await addDoc(collection(db, "configuracion"), { titulo, subtitulo });
+                    await addDoc(collection(db, "configuracion"), { titulo, subtitulo, bgImage });
                 }
-                alert("Cabecera actualizada con éxito.");
+                loader.innerText = "";
+                alert("Cabecera y fondo actualizados con éxito.");
             } catch (err) {
-                alert("Error al actualizar la configuración.");
+                loader.innerText = "";
+                alert("Error al actualizar: " + err.message);
             }
         });
+
+        // --- GESTIÓN DE ANUNCIANTES ---
+        async function loadAdsData() {
+            const querySnapshot = await getDocs(collection(db, "anunciantes"));
+            const tbody = document.getElementById('admin-ads-table');
+            tbody.innerHTML = "";
+            querySnapshot.forEach((docSnap) => {
+                let ad = docSnap.data();
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${ad.titulo}</td>
+                        <td>${ad.ubicacion}</td>
+                        <td class="action-btns">
+                            <button class="btn-danger" onclick="deleteAd('${docSnap.id}')">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('sponsor-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let mediaUrl = document.getElementById('ad-media-url').value;
+            const fileInput = document.getElementById('ad-file-input').files[0];
+            const loader = document.getElementById('ad-loader');
+
+            try {
+                if (fileInput) {
+                    loader.innerText = "Subiendo banner del anunciante...";
+                    const storageRef = ref(storage, `anunciantes_media/${Date.now()}_${fileInput.name}`);
+                    const snapshot = await uploadBytes(storageRef, fileInput);
+                    mediaUrl = await getDownloadURL(snapshot.ref);
+                }
+
+                loader.innerText = "Registrando anunciante...";
+                const adData = {
+                    titulo: document.getElementById('ad-titulo').value,
+                    ubicacion: document.getElementById('ad-ubicacion').value,
+                    link: document.getElementById('ad-link').value,
+                    mediaUrl: mediaUrl || "",
+                    texto: document.getElementById('ad-texto').value
+                };
+
+                await addDoc(collection(db, "anunciantes"), adData);
+                loader.innerText = "";
+                alert("Anunciante registrado con éxito.");
+                document.getElementById('sponsor-form').reset();
+                loadAdsData();
+            } catch (err) {
+                loader.innerText = "";
+                alert("Error al guardar anunciante: " + err.message);
+            }
+        });
+
+        window.deleteAd = async function(id) {
+            if (confirm("¿Eliminar este anunciante?")) {
+                await deleteDoc(doc(db, "anunciantes", id));
+                loadAdsData();
+            }
+        }
     </script>
 </body>
 </html>
