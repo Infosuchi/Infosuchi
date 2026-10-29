@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Noticia</title>
+    <style id="dynamic-styles"></style>
+</head>
+<body>
+
+    <header class="main-header">
+        <h1>Portal de Noticias</h1>
+        <p><a href="index.html" style="color: #a8dadc; text-decoration: none;">← Volver al inicio</a></p>
+    </header>
+
+    <div class="layout-container" style="grid-template-columns: 1fr;">
+        <main class="content-feed" id="single-news-container">
+            <p>Cargando noticia...</p>
+        </main>
+    </div>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Portal de Noticias</p>
+    </footer>
+
+    <script type="module">
+        import { db, doc, getDoc, globalStyles } from './firebase-config.js';
+        document.getElementById('dynamic-styles').innerHTML = globalStyles;
+
+        async function loadSingleNews() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const newsId = urlParams.get('id');
+            const container = document.getElementById('single-news-container');
+
+            if (!newsId) {
+                container.innerHTML = "<p>Noticia no especificada.</p>";
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "noticias", newsId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const news = docSnap.data();
+                    document.title = news.titulo;
+
+                    let mediaHtml = "";
+                    if (news.mediaUrl) {
+                        mediaHtml = `<img class="news-media" src="${news.mediaUrl}" alt="Media">`;
+                    }
+
+                    container.innerHTML = `
+                        <article class="news-card" style="max-width: 800px; margin: 0 auto; width: 100%;">
+                            <h1>${news.titulo}</h1>
+                            <div class="news-meta">
+                                <span>✍️ <strong>${news.autor}</strong></span>
+                                <span>📅 ${news.fecha} - ${news.hora}</span>
+                                <span>📂 ${news.categoria}</span>
+                            </div>
+                            ${mediaHtml}
+                            <div class="news-text" style="white-space: pre-line; font-size: 1.05rem;">${news.cuerpo}</div>
+                            <div class="news-hashtags">#${news.hashtags ? news.hashtags.replaceAll(',', ' #') : ''}</div>
+                            <div class="news-footer-banner" style="margin-top: 30px;">
+                                📢 ${news.anuncianteHtml || 'Espacio Patrocinado'}
+                            </div>
+                        </article>
+                    `;
+                } else {
+                    container.innerHTML = "<p>La noticia solicitada ya no existe o fue eliminada.</p>";
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = "<p>Error al cargar la noticia.</p>";
+            }
+        }
+
+        loadSingleNews();
+    </script>
+</body>
+</html>
