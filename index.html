@@ -132,7 +132,7 @@
                     if (ad.ubicacion === 'Columna Derecha') document.getElementById('right-ads').innerHTML += adContent;
                 });
 
-                // 3. Cargar Noticias
+               // 3. Cargar Noticias ordenadas de la más nueva a la más antigua
                 const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), orderBy("hora", "desc"));
                 const querySnapshot = await getDocs(q);
                 allNews = [];
