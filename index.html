@@ -4,17 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Noticias - Inicio</title>
-    <style id="dynamic-styles"></style>
+    <style>
+        /* ESTILOS CSS DIRECTOS PARA GARANTIZAR QUE NUNCA FALLEN */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        header.main-header { background: #1b263b; color: white; text-align: center; padding: 2.5rem 1rem; border-bottom: 4px solid #e63946; background-size: cover; background-position: center; position: relative; }
+        header.main-header::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(27, 38, 59, 0.75); z-index: 1; }
+        header.main-header > * { position: relative; z-index: 2; }
+        header.main-header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        header.main-header p { font-size: 1.1rem; color: #a8dadc; }
+        
+        .layout-container { display: grid; grid-template-columns: 240px 1fr 280px; gap: 20px; max-width: 1300px; margin: 20px auto; width: 95%; flex: 1; }
+        aside.left-sidebar, aside.right-sidebar { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: fit-content; }
+        aside h3 { font-size: 1.1rem; margin-bottom: 12px; color: #1d3557; border-bottom: 2px solid #f1faee; padding-bottom: 6px; }
+        aside ul { list-style: none; }
+        aside ul li { margin-bottom: 8px; }
+        aside ul li a { text-decoration: none; color: #457b9d; font-weight: 500; display: block; padding: 6px 10px; border-radius: 4px; transition: 0.2s; }
+        aside ul li a:hover { background: #f1faee; color: #1d3557; }
+        
+        main.content-feed { display: flex; flex-direction: column; gap: 20px; }
+        .news-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .news-card h2 a { text-decoration: none; color: #1d3557; }
+        .news-card h2 a:hover { color: #e63946; }
+        .news-meta { font-size: 0.85rem; color: #666; margin: 8px 0 15px 0; display: flex; gap: 15px; flex-wrap: wrap; }
+        
+        .news-media-img { width: 100%; max-height: 500px; object-fit: contain; background: #000; border-radius: 6px; margin-bottom: 15px; display: block; }
+        .news-media-video { width: 100%; max-height: 450px; background: #000; border-radius: 6px; margin-bottom: 15px; display: block; }
+
+        .news-text { line-height: 1.6; color: #444; margin-bottom: 15px; }
+        .ad-banner-box { background: #fff; border: 1px solid #ddd; padding: 12px; text-align: center; border-radius: 6px; margin: 15px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .ad-banner-box img { max-width: 100%; height: auto; border-radius: 4px; }
+        .news-hashtags { font-size: 0.85rem; color: #e63946; margin-top: 10px; font-weight: bold; }
+        
+        .share-container { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #eee; align-items: center; flex-wrap: wrap; }
+        .share-btn { padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; }
+        .share-wa { background: #25d366; }
+        .share-fb { background: #1877f2; }
+        .share-copy { background: #6c757d; }
+
+        .pagination { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .pagination button { padding: 8px 16px; background: #1d3557; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .pagination button:disabled { background: #adb5bd; cursor: not-allowed; }
+        footer.main-footer { background: #1b263b; color: white; text-align: center; padding: 1.5rem; margin-top: auto; }
+        @media(max-width: 992px) { .layout-container { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
     <header class="main-header" id="header-container">
-        <h1 id="site-title">Cargando Portal...</h1>
+        <h1 id="site-title">Portal de Noticias</h1>
         <p id="site-subtitle">Información oportuna y veraz</p>
         <div id="header-ads" style="margin-top: 10px;"></div>
     </header>
 
     <div class="layout-container">
+        <!-- Columna Izquierda -->
         <aside class="left-sidebar">
             <h3>Categorías</h3>
             <ul id="categories-list">
@@ -23,10 +67,12 @@
             <div id="left-ads" style="margin-top: 20px;"></div>
         </aside>
 
+        <!-- Centro: Feed de Noticias -->
         <main class="content-feed" id="news-feed">
-            <p>Cargando noticias...</p>
+            <p>Cargando noticias desde Firebase...</p>
         </main>
 
+        <!-- Columna Derecha -->
         <aside class="right-sidebar">
             <h3>Últimas 10 Noticias</h3>
             <ul id="latest-news-list">
@@ -44,8 +90,7 @@
     </footer>
 
     <script type="module">
-        import { db, collection, getDocs, query, orderBy, globalStyles } from './firebase-config.js';
-        document.getElementById('dynamic-styles').innerHTML = globalStyles;
+        import { db, collection, getDocs, query, orderBy } from './firebase-config.js';
 
         let allNews = [];
         let currentCategory = new URLSearchParams(window.location.search).get('cat');
@@ -54,6 +99,7 @@
 
         async function initPortal() {
             try {
+                // 1. Cargar Configuración
                 const configSnap = await getDocs(collection(db, "configuracion"));
                 if (!configSnap.empty) {
                     const cfg = configSnap.docs[0].data();
@@ -64,6 +110,7 @@
                     }
                 }
 
+                // 2. Cargar Anunciantes
                 const adsSnap = await getDocs(collection(db, "anunciantes"));
                 adsSnap.forEach(docSnap => {
                     let ad = docSnap.data();
@@ -81,6 +128,7 @@
                     if (ad.ubicacion === 'Columna Derecha') document.getElementById('right-ads').innerHTML += adContent;
                 });
 
+                // 3. Cargar Noticias
                 const q = query(collection(db, "noticias"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
                 allNews = [];
@@ -98,7 +146,7 @@
 
             } catch (error) {
                 console.error("Error al cargar datos:", error);
-                document.getElementById('news-feed').innerHTML = `<p>Error al conectar con la base de datos de Firebase.</p>`;
+                document.getElementById('news-feed').innerHTML = `<p style="color:red; padding:15px; background:white; border-radius:8px;">Error al conectar con Firebase. Verifica que las reglas de Firestore estén públicas para lectura y que tu archivo <code>firebase-config.js</code> tenga las credenciales correctas.</p>`;
             }
         }
 
@@ -136,7 +184,7 @@
             const currentPosts = filteredNews.slice(startIndex, startIndex + postsPerPage);
 
             if (currentPosts.length === 0) {
-                feed.innerHTML = "<p>No se encontraron publicaciones en esta sección.</p>";
+                feed.innerHTML = "<div class='news-card'><p>No se encontraron publicaciones disponibles en este momento. Publica tu primera noticia desde el panel de administración.</p></div>";
                 document.getElementById('pagination-controls').innerHTML = "";
                 return;
             }
@@ -144,17 +192,16 @@
             currentPosts.forEach(news => {
                 let mediaHtml = "";
                 if (news.mediaUrl) {
-                    // Detección robusta de video (por extensión o por tipo de archivo subido)
                     const isVideo = news.mediaUrl.match(/\.(mp4|webm|ogg|mov)([\?#]|$)/i) || news.mediaType === 'video';
                     if (isVideo) {
-                        mediaHtml = `<video class="news-media-video" controls preload="metadata"><source src="${news.mediaUrl}">Tu navegador no soporta la reproducción de videos.</video>`;
+                        mediaHtml = `<video class="news-media-video" controls preload="metadata"><source src="${news.mediaUrl}"></video>`;
                     } else {
                         mediaHtml = `<img class="news-media-img" src="${news.mediaUrl}" alt="Imagen noticia">`;
                     }
                 }
 
                 const noticiaUrl = window.location.origin + window.location.pathname.replace('index.html', '') + `noticia.html?id=${news.id}`;
-                const shareText = encodeURIComponent(`¡Lee esta noticia: "${news.titulo}" en INFOSUCHI!`);
+                const shareText = encodeURIComponent(`¡Lee esta noticia: "${news.titulo}"!`);
 
                 feed.innerHTML += `
                     <article class="news-card">
@@ -168,7 +215,6 @@
                         <div class="news-text">${news.cuerpo ? news.cuerpo.substring(0, 250) + '...' : ''}</div>
                         <div class="news-hashtags">#${news.hashtags ? news.hashtags.replaceAll(',', ' #') : 'noticias'}</div>
                         
-                        <!-- BOTONES DE COMPARTIR -->
                         <div class="share-container">
                             <span style="font-size:0.85rem; font-weight:600; color:#555;">Compartir:</span>
                             <a class="share-btn share-wa" href="https://api.whatsapp.com/send?text=${shareText}%20${encodeURIComponent(noticiaUrl)}" target="_blank">WhatsApp</a>
