@@ -29,7 +29,6 @@
 </head>
 <body>
 
-    <!-- VISTA DE LOGIN -->
     <div id="login-section" class="login-wrapper">
         <div class="login-box">
             <h2>Acceso Administrador</h2>
@@ -42,7 +41,6 @@
         </div>
     </div>
 
-    <!-- PANEL DE ADMINISTRACIÓN -->
     <div id="admin-dashboard" class="admin-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h2>Panel de Control</h2>
@@ -69,9 +67,9 @@
                 <input type="text" id="news-categoria" placeholder="Categoría" required>
                 <input type="text" id="news-hashtags" placeholder="Hashtags (ej. local, politica)">
                 
-                <label>Multimedia de la Noticia:</label>
-                <input type="text" id="news-media-url" placeholder="Opción A: Pegar URL directa de imagen o video">
-                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir archivo desde tu dispositivo:</label>
+                <label>Multimedia (Imagen o Video):</label>
+                <input type="text" id="news-media-url" placeholder="Opción A: Pegar URL directa">
+                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir archivo (Imagen o Video MP4) desde tu dispositivo:</label>
                 <input type="file" id="news-file-input" accept="image/*,video/*">
 
                 <textarea id="news-cuerpo" rows="6" placeholder="Cuerpo de la noticia..." required></textarea>
@@ -92,16 +90,16 @@
             </table>
         </div>
 
-        <!-- SECCIÓN 2: ADMINISTRAR PÁGINA (CABECERA Y FONDO) -->
+        <!-- SECCIÓN 2: PÁGINA -->
         <div id="tab-pagina" class="section-panel">
             <h3>Cabecera y Fondo del Sitio</h3>
             <form id="config-form">
                 <input type="text" id="cfg-titulo" placeholder="Título Principal" required>
                 <input type="text" id="cfg-subtitulo" placeholder="Subtítulo / Lema" required>
                 
-                <label>Imagen de Fondo de la Cabecera:</label>
-                <input type="text" id="cfg-bg-url" placeholder="Opción A: Pegar URL de la imagen de fondo">
-                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir imagen de fondo desde el dispositivo:</label>
+                <label>Imagen de Fondo:</label>
+                <input type="text" id="cfg-bg-url" placeholder="URL de fondo">
+                <label style="font-size: 0.85rem; color: #666;">Subir imagen de fondo:</label>
                 <input type="file" id="cfg-bg-file" accept="image/*">
                 <p id="cfg-loader" class="loader-status"></p>
 
@@ -113,7 +111,7 @@
         <div id="tab-anunciantes" class="section-panel">
             <h3>Gestión de Anunciantes y Patrocinadores</h3>
             <form id="sponsor-form">
-                <input type="text" id="ad-titulo" placeholder="Nombre o referencia del anunciante" required>
+                <input type="text" id="ad-titulo" placeholder="Nombre del anunciante" required>
                 
                 <label>Ubicación del Banner:</label>
                 <select id="ad-ubicacion" required>
@@ -123,14 +121,14 @@
                     <option value="Columna Derecha">Columna Derecha</option>
                 </select>
 
-                <input type="text" id="ad-link" placeholder="Enlace web de destino al hacer clic (Opcional)">
+                <input type="text" id="ad-link" placeholder="Enlace web de destino (Opcional)">
                 
-                <label>Banner Gráfico o Imagen:</label>
-                <input type="text" id="ad-media-url" placeholder="Opción A: Pegar URL de la imagen del banner">
-                <label style="font-size: 0.85rem; color: #666;">Opción B: Subir imagen del banner desde el dispositivo:</label>
+                <label>Banner Gráfico:</label>
+                <input type="text" id="ad-media-url" placeholder="URL de imagen del banner">
+                <label style="font-size: 0.85rem; color: #666;">Subir imagen del banner:</label>
                 <input type="file" id="ad-file-input" accept="image/*">
 
-                <textarea id="ad-texto" rows="3" placeholder="Texto descriptivo o HTML opcional del anuncio..."></textarea>
+                <textarea id="ad-texto" rows="3" placeholder="Texto o HTML opcional..."></textarea>
                 <p id="ad-loader" class="loader-status"></p>
 
                 <button type="submit" style="background: #2a9d8f;">Publicar Anunciante</button>
@@ -184,7 +182,6 @@
             event.target.classList.add('active');
         }
 
-        // --- GESTIÓN DE NOTICIAS ---
         async function loadAdminData() {
             const querySnapshot = await getDocs(collection(db, "noticias"));
             const tbody = document.getElementById('admin-news-table');
@@ -216,14 +213,20 @@
             const loader = document.getElementById('news-loader');
 
             try {
+                let mediaType = "image";
                 if (fileInput) {
-                    loader.innerText = "Subiendo archivo al servidor de Firebase...";
+                    loader.innerText = "Subiendo archivo multimedia a Firebase...";
+                    if (fileInput.type.includes('video') || fileInput.name.match(/\.(mp4|webm|ogg|mov)$/i)) {
+                        mediaType = "video";
+                    }
                     const storageRef = ref(storage, `noticias_media/${Date.now()}_${fileInput.name}`);
                     const snapshot = await uploadBytes(storageRef, fileInput);
                     mediaUrl = await getDownloadURL(snapshot.ref);
+                } else if (mediaUrl.match(/\.(mp4|webm|ogg|mov)([\?#]|$)/i)) {
+                    mediaType = "video";
                 }
 
-                loader.innerText = "Guardando en base de datos...";
+                loader.innerText = "Guardando noticia...";
                 const newsData = {
                     titulo: document.getElementById('news-titulo').value,
                     autor: document.getElementById('news-autor').value,
@@ -232,7 +235,8 @@
                     categoria: document.getElementById('news-categoria').value,
                     hashtags: document.getElementById('news-hashtags').value,
                     cuerpo: document.getElementById('news-cuerpo').value,
-                    mediaUrl: mediaUrl || ""
+                    mediaUrl: mediaUrl || "",
+                    mediaType: mediaType
                 };
 
                 if (id) {
@@ -248,7 +252,7 @@
             } catch (err) {
                 console.error(err);
                 loader.innerText = "";
-                alert("Error al procesar la solicitud: " + err.message);
+                alert("Error al procesar: " + err.message);
             }
         });
 
@@ -280,7 +284,6 @@
             }
         }
 
-        // --- CONFIGURACIÓN DE PÁGINA (FONDO Y CABECERA) ---
         async function loadConfigData() {
             const querySnap = await getDocs(collection(db, "configuracion"));
             if (!querySnap.empty) {
@@ -301,29 +304,27 @@
 
             try {
                 if (bgFile) {
-                    loader.innerText = "Subiendo imagen de fondo...";
+                    loader.innerText = "Subiendo fondo...";
                     const storageRef = ref(storage, `site_bg/${Date.now()}_${bgFile.name}`);
                     const snapshot = await uploadBytes(storageRef, bgFile);
                     bgImage = await getDownloadURL(snapshot.ref);
                 }
 
-                loader.innerText = "Guardando configuración...";
+                loader.innerText = "Guardando...";
                 const querySnap = await getDocs(collection(db, "configuracion"));
                 if (!querySnap.empty) {
-                    const docId = querySnap.docs[0].id;
-                    await updateDoc(doc(db, "configuracion", docId), { titulo, subtitulo, bgImage });
+                    await updateDoc(doc(db, "configuracion", querySnap.docs[0].id), { titulo, subtitulo, bgImage });
                 } else {
                     await addDoc(collection(db, "configuracion"), { titulo, subtitulo, bgImage });
                 }
                 loader.innerText = "";
-                alert("Cabecera y fondo actualizados con éxito.");
+                alert("Actualizado con éxito.");
             } catch (err) {
                 loader.innerText = "";
-                alert("Error al actualizar: " + err.message);
+                alert("Error: " + err.message);
             }
         });
 
-        // --- GESTIÓN DE ANUNCIANTES ---
         async function loadAdsData() {
             const querySnapshot = await getDocs(collection(db, "anunciantes"));
             const tbody = document.getElementById('admin-ads-table');
@@ -350,13 +351,13 @@
 
             try {
                 if (fileInput) {
-                    loader.innerText = "Subiendo banner del anunciante...";
+                    loader.innerText = "Subiendo banner...";
                     const storageRef = ref(storage, `anunciantes_media/${Date.now()}_${fileInput.name}`);
                     const snapshot = await uploadBytes(storageRef, fileInput);
                     mediaUrl = await getDownloadURL(snapshot.ref);
                 }
 
-                loader.innerText = "Registrando anunciante...";
+                loader.innerText = "Guardando anunciante...";
                 const adData = {
                     titulo: document.getElementById('ad-titulo').value,
                     ubicacion: document.getElementById('ad-ubicacion').value,
@@ -372,7 +373,7 @@
                 loadAdsData();
             } catch (err) {
                 loader.innerText = "";
-                alert("Error al guardar anunciante: " + err.message);
+                alert("Error: " + err.message);
             }
         });
 
