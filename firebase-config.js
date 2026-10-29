@@ -6,6 +6,7 @@ const firebaseConfig = {
     storageBucket: "calcos-6760b.firebasestorage.app",
     messagingSenderId: "20210064860",
     appId: "1:20210064860:web:01db78b92e3b0d43400319"
+};
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
