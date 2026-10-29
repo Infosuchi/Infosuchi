@@ -47,8 +47,16 @@
 
                     let mediaHtml = "";
                     if (news.mediaUrl) {
-                        mediaHtml = `<img class="news-media" src="${news.mediaUrl}" alt="Media">`;
+                        const isVideo = news.mediaUrl.match(/\.(mp4|webm|ogg|mov)([\?#]|$)/i) || news.mediaType === 'video';
+                        if (isVideo) {
+                            mediaHtml = `<video class="news-media-video" controls preload="metadata"><source src="${news.mediaUrl}">Tu navegador no soporta video.</video>`;
+                        } else {
+                            mediaHtml = `<img class="news-media-img" src="${news.mediaUrl}" alt="Media">`;
+                        }
                     }
+
+                    const noticiaUrl = window.location.href;
+                    const shareText = encodeURIComponent(`¡Lee esta noticia: "${news.titulo}" en INFOSUCHI!`);
 
                     container.innerHTML = `
                         <article class="news-card" style="max-width: 800px; margin: 0 auto; width: 100%;">
@@ -61,13 +69,17 @@
                             ${mediaHtml}
                             <div class="news-text" style="white-space: pre-line; font-size: 1.05rem;">${news.cuerpo}</div>
                             <div class="news-hashtags">#${news.hashtags ? news.hashtags.replaceAll(',', ' #') : ''}</div>
-                            <div class="news-footer-banner" style="margin-top: 30px;">
-                                📢 ${news.anuncianteHtml || 'Espacio Patrocinado'}
+                            
+                            <div class="share-container">
+                                <span style="font-size:0.9rem; font-weight:600; color:#555;">Compartir esta noticia:</span>
+                                <a class="share-btn share-wa" href="https://api.whatsapp.com/send?text=${shareText}%20${encodeURIComponent(noticiaUrl)}" target="_blank">WhatsApp</a>
+                                <a class="share-btn share-fb" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(noticiaUrl)}" target="_blank">Facebook</a>
+                                <button class="share-btn share-copy" onclick="navigator.clipboard.writeText('${noticiaUrl}'); alert('¡Enlace copiado al portapapeles!');">Copiar Enlace</button>
                             </div>
                         </article>
                     `;
                 } else {
-                    container.innerHTML = "<p>La noticia solicitada ya no existe o fue eliminada.</p>";
+                    container.innerHTML = "<p>La noticia solicitada ya no existe.</p>";
                 }
             } catch (e) {
                 console.error(e);
