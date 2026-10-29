@@ -8,18 +8,20 @@
 </head>
 <body>
 
-    <header class="main-header" id="header-banner">
+    <header class="main-header" id="header-container">
         <h1 id="site-title">Cargando Portal...</h1>
         <p id="site-subtitle">Información oportuna y veraz</p>
+        <div id="header-ads" style="margin-top: 10px;"></div>
     </header>
 
     <div class="layout-container">
-        <!-- Columna Izquierda: Menú de Categorías -->
+        <!-- Columna Izquierda: Menú de Categorías + Anuncios Izquierda -->
         <aside class="left-sidebar">
             <h3>Categorías</h3>
             <ul id="categories-list">
                 <li><a href="index.html">Todas las noticias</a></li>
             </ul>
+            <div id="left-ads" style="margin-top: 20px;"></div>
         </aside>
 
         <!-- Parte Central: Feed de Noticias -->
@@ -27,12 +29,13 @@
             <p>Cargando noticias...</p>
         </main>
 
-        <!-- Columna Derecha: 10 Últimas Noticias -->
+        <!-- Columna Derecha: 10 Últimas Noticias + Anuncios Derecha -->
         <aside class="right-sidebar">
             <h3>Últimas 10 Noticias</h3>
             <ul id="latest-news-list">
                 <li>Cargando...</li>
             </ul>
+            <div id="right-ads" style="margin-top: 20px;"></div>
         </aside>
     </div>
 
@@ -40,11 +43,12 @@
     <div class="pagination" id="pagination-controls"></div>
 
     <footer class="main-footer">
+        <div id="footer-ads" style="margin-bottom: 10px;"></div>
         <p>&copy; 2026 Portal de Noticias. Todos los derechos reservados. Alojado en GitHub Pages.</p>
     </footer>
 
     <script type="module">
-        import { db, collection, getDocs, query, orderBy, limit, globalStyles } from './firebase-config.js';
+        import { db, collection, getDocs, query, orderBy, globalStyles } from './firebase-config.js';
         document.getElementById('dynamic-styles').innerHTML = globalStyles;
 
         let allNews = [];
@@ -54,15 +58,36 @@
 
         async function initPortal() {
             try {
-                // Cargar Configuración del Sitio (Banner superior)
+                // Cargar Configuración del Sitio (Cabecera y Fondo)
                 const configSnap = await getDocs(collection(db, "configuracion"));
                 if (!configSnap.empty) {
                     const cfg = configSnap.docs[0].data();
                     document.getElementById('site-title').innerText = cfg.titulo || "Portal de Noticias";
                     document.getElementById('site-subtitle').innerText = cfg.subtitulo || "Actualidad al instante";
+                    if (cfg.bgImage) {
+                        document.getElementById('header-container').style.backgroundImage = `url('${cfg.bgImage}')`;
+                    }
                 }
 
-                // Cargar Noticias ordenadas por fecha descendente
+                // Cargar Anunciantes Activos y distribuirlos por ubicación
+                const adsSnap = await getDocs(collection(db, "anunciantes"));
+                adsSnap.forEach(docSnap => {
+                    let ad = docSnap.data();
+                    let adContent = `
+                        <div class="ad-banner-box">
+                            ${ad.link ? `<a href="${ad.link}" target="_blank">` : ''}
+                            ${ad.mediaUrl ? `<img src="${ad.mediaUrl}" alt="Publicidad">` : ''}
+                            <div>${ad.texto || ''}</div>
+                            ${ad.link ? `</a>` : ''}
+                        </div>
+                    `;
+                    if (ad.ubicacion === 'Cabecera') document.getElementById('header-ads').innerHTML += adContent;
+                    if (ad.ubicacion === 'Pie de pagina') document.getElementById('footer-ads').innerHTML += adContent;
+                    if (ad.ubicacion === 'Columna Izquierda') document.getElementById('left-ads').innerHTML += adContent;
+                    if (ad.ubicacion === 'Columna Derecha') document.getElementById('right-ads').innerHTML += adContent;
+                });
+
+                // Cargar Noticias
                 const q = query(collection(db, "noticias"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
                 allNews = [];
@@ -80,7 +105,7 @@
 
             } catch (error) {
                 console.error("Error al cargar datos:", error);
-                document.getElementById('news-feed').innerHTML = `<p>Error al conectar con la base de datos de Firebase. Verifica tu configuración.</p>`;
+                document.getElementById('news-feed').innerHTML = `<p>Error al conectar con la base de datos de Firebase.</p>`;
             }
         }
 
@@ -108,11 +133,10 @@
             const feed = document.getElementById('news-feed');
             feed.innerHTML = "";
 
-            // Filtrar por categoría si existe en la URL
             let filteredNews = allNews;
             if (currentCategory) {
                 filteredNews = allNews.filter(n => n.categoria === currentCategory);
-                document.querySelector('.main-header h1').innerText += ` - Categoría: ${currentCategory}`;
+                document.querySelector('.main-header h1').innerText += ` - ${currentCategory}`;
             }
 
             const startIndex = (currentPage - 1) * postsPerPage;
@@ -127,10 +151,10 @@
             currentPosts.forEach(news => {
                 let mediaHtml = "";
                 if (news.mediaUrl) {
-                    if (news.mediaType === 'video' || news.mediaUrl.includes('youtube') || news.mediaUrl.endsWith('.mp4')) {
+                    if (news.mediaUrl.endsWith('.mp4') || news.mediaUrl.includes('video')) {
                         mediaHtml = `<video class="news-media" controls src="${news.mediaUrl}"></video>`;
                     } else {
-                        mediaHtml = `<img class="news-media" src="${news.mediaUrl}" alt="Imagen de la noticia">`;
+                        mediaHtml = `<img class="news-media" src="${news.mediaUrl}" alt="Imagen noticia">`;
                     }
                 }
 
@@ -145,9 +169,6 @@
                         ${mediaHtml}
                         <div class="news-text">${news.cuerpo ? news.cuerpo.substring(0, 250) + '...' : ''}</div>
                         <div class="news-hashtags">#${news.hashtags ? news.hashtags.replaceAll(',', ' #') : 'noticias'}</div>
-                        <div class="news-footer-banner">
-                            📢 ${news.anuncianteHtml || 'Espacio publicitario disponible / Patrocinador oficial'}
-                        </div>
                     </article>
                 `;
             });
