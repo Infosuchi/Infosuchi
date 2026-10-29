@@ -15,7 +15,6 @@
     </header>
 
     <div class="layout-container">
-        <!-- Columna Izquierda: Menú de Categorías + Anuncios Izquierda -->
         <aside class="left-sidebar">
             <h3>Categorías</h3>
             <ul id="categories-list">
@@ -24,12 +23,10 @@
             <div id="left-ads" style="margin-top: 20px;"></div>
         </aside>
 
-        <!-- Parte Central: Feed de Noticias -->
         <main class="content-feed" id="news-feed">
             <p>Cargando noticias...</p>
         </main>
 
-        <!-- Columna Derecha: 10 Últimas Noticias + Anuncios Derecha -->
         <aside class="right-sidebar">
             <h3>Últimas 10 Noticias</h3>
             <ul id="latest-news-list">
@@ -39,7 +36,6 @@
         </aside>
     </div>
 
-    <!-- Paginación -->
     <div class="pagination" id="pagination-controls"></div>
 
     <footer class="main-footer">
@@ -58,7 +54,6 @@
 
         async function initPortal() {
             try {
-                // Cargar Configuración del Sitio (Cabecera y Fondo)
                 const configSnap = await getDocs(collection(db, "configuracion"));
                 if (!configSnap.empty) {
                     const cfg = configSnap.docs[0].data();
@@ -69,7 +64,6 @@
                     }
                 }
 
-                // Cargar Anunciantes Activos y distribuirlos por ubicación
                 const adsSnap = await getDocs(collection(db, "anunciantes"));
                 adsSnap.forEach(docSnap => {
                     let ad = docSnap.data();
@@ -87,7 +81,6 @@
                     if (ad.ubicacion === 'Columna Derecha') document.getElementById('right-ads').innerHTML += adContent;
                 });
 
-                // Cargar Noticias
                 const q = query(collection(db, "noticias"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
                 allNews = [];
@@ -151,12 +144,17 @@
             currentPosts.forEach(news => {
                 let mediaHtml = "";
                 if (news.mediaUrl) {
-                    if (news.mediaUrl.endsWith('.mp4') || news.mediaUrl.includes('video')) {
-                        mediaHtml = `<video class="news-media" controls src="${news.mediaUrl}"></video>`;
+                    // Detección robusta de video (por extensión o por tipo de archivo subido)
+                    const isVideo = news.mediaUrl.match(/\.(mp4|webm|ogg|mov)([\?#]|$)/i) || news.mediaType === 'video';
+                    if (isVideo) {
+                        mediaHtml = `<video class="news-media-video" controls preload="metadata"><source src="${news.mediaUrl}">Tu navegador no soporta la reproducción de videos.</video>`;
                     } else {
-                        mediaHtml = `<img class="news-media" src="${news.mediaUrl}" alt="Imagen noticia">`;
+                        mediaHtml = `<img class="news-media-img" src="${news.mediaUrl}" alt="Imagen noticia">`;
                     }
                 }
+
+                const noticiaUrl = window.location.origin + window.location.pathname.replace('index.html', '') + `noticia.html?id=${news.id}`;
+                const shareText = encodeURIComponent(`¡Lee esta noticia: "${news.titulo}" en INFOSUCHI!`);
 
                 feed.innerHTML += `
                     <article class="news-card">
@@ -169,6 +167,14 @@
                         ${mediaHtml}
                         <div class="news-text">${news.cuerpo ? news.cuerpo.substring(0, 250) + '...' : ''}</div>
                         <div class="news-hashtags">#${news.hashtags ? news.hashtags.replaceAll(',', ' #') : 'noticias'}</div>
+                        
+                        <!-- BOTONES DE COMPARTIR -->
+                        <div class="share-container">
+                            <span style="font-size:0.85rem; font-weight:600; color:#555;">Compartir:</span>
+                            <a class="share-btn share-wa" href="https://api.whatsapp.com/send?text=${shareText}%20${encodeURIComponent(noticiaUrl)}" target="_blank">WhatsApp</a>
+                            <a class="share-btn share-fb" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(noticiaUrl)}" target="_blank">Facebook</a>
+                            <button class="share-btn share-copy" onclick="navigator.clipboard.writeText('${noticiaUrl}'); alert('¡Enlace copiado al portapapeles!');">Copiar Enlace</button>
+                        </div>
                     </article>
                 `;
             });
