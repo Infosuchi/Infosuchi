@@ -6,7 +6,6 @@ const firebaseConfig = {
     storageBucket: "calcos-6760b.firebasestorage.app",
     messagingSenderId: "20210064860",
     appId: "1:20210064860:web:01db78b92e3b0d43400319"
-};
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -40,11 +39,24 @@ export const globalStyles = `
     .news-card h2 a { text-decoration: none; color: #1d3557; }
     .news-card h2 a:hover { color: #e63946; }
     .news-meta { font-size: 0.85rem; color: #666; margin: 8px 0 15px 0; display: flex; gap: 15px; flex-wrap: wrap; }
-    .news-media { width: 100%; max-height: 400px; object-fit: cover; border-radius: 6px; margin-bottom: 15px; }
+    
+    /* IMÁGENES COMPLETAS SIN RECORTE */
+    .news-media-img { width: 100%; max-height: 500px; object-fit: contain; background: #000; border-radius: 6px; margin-bottom: 15px; display: block; }
+    /* REPRODUCTOR DE VIDEO PERFECTO */
+    .news-media-video { width: 100%; max-height: 450px; background: #000; border-radius: 6px; margin-bottom: 15px; display: block; }
+
     .news-text { line-height: 1.6; color: #444; margin-bottom: 15px; }
     .ad-banner-box { background: #fff; border: 1px solid #ddd; padding: 12px; text-align: center; border-radius: 6px; margin: 15px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .ad-banner-box img { max-width: 100%; height: auto; border-radius: 4px; }
     .news-hashtags { font-size: 0.85rem; color: #e63946; margin-top: 10px; font-weight: bold; }
+    
+    /* BOTONES DE COMPARTIR */
+    .share-container { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #eee; align-items: center; flex-wrap: wrap; }
+    .share-btn { padding: 6px 12px; border-radius: 4px; color: white; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; cursor: border; border: none; }
+    .share-wa { background: #25d366; }
+    .share-fb { background: #1877f2; }
+    .share-copy { background: #6c757d; cursor: pointer; }
+
     .pagination { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
     .pagination button { padding: 8px 16px; background: #1d3557; color: white; border: none; border-radius: 4px; cursor: pointer; }
     .pagination button:disabled { background: #adb5bd; cursor: not-allowed; }
