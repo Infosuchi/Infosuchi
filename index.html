@@ -133,7 +133,7 @@
                 });
 
                // 3. Cargar Noticias ordenadas de la más nueva a la más antigua
-                const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), orderBy("hora", "desc"));
+                const q = query(collection(db, "noticias"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
                 allNews = [];
                 let categoriesSet = new Set();
