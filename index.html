@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Noticias - Inicio</title>
+    <title>INFOSUCHI - Inicio</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
@@ -56,8 +56,8 @@
 <body>
 
     <header class="main-header" id="header-container">
-        <h1 id="site-title">Portal de Noticias</h1>
-        <p id="site-subtitle">Información oportuna y veraz</p>
+        <h1 id="site-title">INFOSUCHI</h1>
+        <p id="site-subtitle">Tu medio de noticias Digital</p>
         <div id="header-ads" style="margin-top: 10px;"></div>
     </header>
 
@@ -107,7 +107,7 @@
                 const configSnap = await getDocs(collection(db, "configuracion"));
                 if (!configSnap.empty) {
                     const cfg = configSnap.docs[0].data();
-                    document.getElementById('site-title').innerText = cfg.titulo || "Portal de Noticias";
+                    document.getElementById('site-title').innerText = cfg.titulo || "Infosuchi";
                     document.getElementById('site-subtitle').innerText = cfg.subtitulo || "Actualidad al instante";
                     if (cfg.bgImage) {
                         document.getElementById('header-container').style.backgroundImage = `url('${cfg.bgImage}')`;
