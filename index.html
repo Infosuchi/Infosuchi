@@ -154,4 +154,116 @@
             }
         }
 
-        function render
+        function renderCategories(categoriesSet) {
+            const catList = document.getElementById('categories-list');
+            categoriesSet.forEach(cat => {
+                catList.innerHTML += `<li><a href="index.html?cat=${encodeURIComponent(cat)}">${cat}</a></li>`;
+            });
+        }
+
+        function renderLatestNews() {
+            const latestList = document.getElementById('latest-news-list');
+            latestList.innerHTML = "";
+            const latest10 = allNews.slice(0, 10);
+            if (latest10.length === 0) {
+                latestList.innerHTML = "<li>No hay noticias recientes</li>";
+                return;
+            }
+            latest10.forEach(news => {
+                latestList.innerHTML += `<li><a href="noticia.html?id=${news.id}">${news.titulo}</a></li>`;
+            });
+        }
+
+        function renderFeed() {
+            const feed = document.getElementById('news-feed');
+            feed.innerHTML = "";
+
+            let filteredNews = allNews;
+            if (currentCategory) {
+                filteredNews = allNews.filter(n => n.categoria === currentCategory);
+                document.querySelector('.main-header h1').innerText += ` - ${currentCategory}`;
+            }
+
+            const startIndex = (currentPage - 1) * postsPerPage;
+            const currentPosts = filteredNews.slice(startIndex, startIndex + postsPerPage);
+
+            if (currentPosts.length === 0) {
+                feed.innerHTML = "<div class='news-card'><p>No se encontraron publicaciones disponibles en esta sección.</p></div>";
+                document.getElementById('pagination-controls').innerHTML = "";
+                return;
+            }
+
+            currentPosts.forEach(news => {
+                let mediaHtml = "";
+                if (news.mediaUrl) {
+                    const isVideo = news.mediaUrl.match(/\.(mp4|webm|ogg|mov)([\?#]|$)/i) || news.mediaType === 'video';
+                    if (isVideo) {
+                        mediaHtml = `<video class="news-media-video" controls preload="metadata"><source src="${news.mediaUrl}"></video>`;
+                    } else {
+                        mediaHtml = `<img class="news-media-img" src="${news.mediaUrl}" alt="Imagen noticia">`;
+                    }
+                }
+
+                const noticiaUrl = window.location.origin + window.location.pathname.replace('index.html', '') + `noticia.html?id=${news.id}`;
+                const shareText = encodeURIComponent(`¡Lee esta noticia: "${news.titulo}"!`);
+
+                // Resumen del texto y botón Leer más
+                const resumenTexto = news.cuerpo ? (news.cuerpo.length > 220 ? news.cuerpo.substring(0, 220) + '...' : news.cuerpo) : '';
+
+                feed.innerHTML += `
+                    <article class="news-card">
+                        <h2><a href="noticia.html?id=${news.id}">${news.titulo}</a></h2>
+                        <div class="news-meta">
+                            <span>✍️ <strong>${news.autor || 'Redacción'}</strong></span>
+                            <span>📅 ${news.fecha || ''} ${news.hora || ''}</span>
+                            <span>📂 ${news.categoria || 'General'}</span>
+                        </div>
+                        ${mediaHtml}
+                        <div class="news-text">${resumenTexto}</div>
+                        
+                        <!-- BOTÓN LEER MÁS -->
+                        <div>
+                            <a href="noticia.html?id=${news.id}" class="read-more-btn">Leer más &rarr;</a>
+                        </div>
+
+                        <div class="news-hashtags">#${news.hashtags ? news.hashtags.replaceAll(',', ' #') : 'noticias'}</div>
+                        
+                        <div class="share-container">
+                            <span style="font-size:0.85rem; font-weight:600; color:#555;">Compartir:</span>
+                            <a class="share-btn share-wa" href="https://api.whatsapp.com/send?text=${shareText}%20${encodeURIComponent(noticiaUrl)}" target="_blank">WhatsApp</a>
+                            <a class="share-btn share-fb" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(noticiaUrl)}" target="_blank">Facebook</a>
+                            <button class="share-btn share-copy" onclick="navigator.clipboard.writeText('${noticiaUrl}'); alert('¡Enlace copiado al portapapeles!');">Copiar Enlace</button>
+                        </div>
+                    </article>
+                `;
+            });
+
+            renderPagination(filteredNews.length);
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / postsPerPage);
+            const paginationDiv = document.getElementById('pagination-controls');
+            paginationDiv.innerHTML = "";
+
+            if (totalPages <= 1) return;
+
+            if (currentPage > 1) {
+                paginationDiv.innerHTML += `<button onclick="changePage(${currentPage - 1})">Anterior</button>`;
+            }
+            paginationDiv.innerHTML += `<span>Página ${currentPage} de ${totalPages}</span>`;
+            if (currentPage < totalPages) {
+                paginationDiv.innerHTML += `<button onclick="changePage(${currentPage + 1})">Siguiente</button>`;
+            }
+        }
+
+        window.changePage = function(page) {
+            currentPage = page;
+            renderFeed();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        initPortal();
+    </script>
+</body>
+</html>
