@@ -133,7 +133,7 @@
                 });
 
                 // 3. Cargar Noticias
-                const q = query(collection(db, "noticias"), orderBy("fecha", "desc"));
+                const q = query(collection(db, "noticias"), orderBy("fecha", "desc"), orderBy("hora", "desc"));
                 const querySnapshot = await getDocs(q);
                 allNews = [];
                 let categoriesSet = new Set();
