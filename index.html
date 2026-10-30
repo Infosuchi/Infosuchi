@@ -73,7 +73,7 @@
 
         <!-- Centro: Feed de Noticias -->
         <main class="content-feed" id="news-feed">
-            <p>Cargando noticias desde Firebase...</p>
+            <p>Cargando noticias de Infosuchi...</p>
         </main>
 
         <!-- Columna Derecha -->
@@ -108,7 +108,7 @@
                 if (!configSnap.empty) {
                     const cfg = configSnap.docs[0].data();
                     document.getElementById('site-title').innerText = cfg.titulo || "Infosuchi";
-                    document.getElementById('site-subtitle').innerText = cfg.subtitulo || "Actualidad al instante";
+                    document.getElementById('site-subtitle').innerText = cfg.subtitulo || "Tu medio de noticias Digital";
                     if (cfg.bgImage) {
                         document.getElementById('header-container').style.backgroundImage = `url('${cfg.bgImage}')`;
                     }
@@ -133,7 +133,11 @@
                 });
 
                // 3. Cargar Noticias ordenadas de la más nueva a la más antigua
-                const q = query(collection(db, "noticias"), orderBy("fecha", "asc"));
+                const q = query(
+    collection(db, "noticias"), 
+    orderBy("fecha", "desc"), 
+    orderBy("hora", "desc") // Orden secundario por hora para el mismo día
+);
                 const querySnapshot = await getDocs(q);
                 allNews = [];
                 let categoriesSet = new Set();
